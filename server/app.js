@@ -88,7 +88,7 @@ app.get('/Product', (req, res) =>
       throw err
     } else {
       res.send(results);
-      // console.log(results[1]);
+      // console.log(results);
     };
   });
 })
@@ -164,6 +164,7 @@ app.post('/Addprod', (req, res) =>
                 })
               }
             })
+            res.send(result)
           }
         });
       }
@@ -251,6 +252,7 @@ app.post('/Delproduct', (req, res) =>
           })
         }
       })
+      res.send(result);
     }
   });
 
@@ -498,14 +500,18 @@ app.post('/Order', (req, res) => {
   var userID = req.body.UserID;
   var Qty = req.body.prodQty;
   var prodID = req.body.prodID;
+  var prodName = req.body.prodName;
+  var prodPrice = req.body.prodPrice;
 
   // console.log(userID);
   // console.log(Qty);
   // console.log(prodID);
+  // console.log(prodName);
+  // console.log(prodPrice);
 
   if (Qty > 0)
   {
-    var storeData = `INSERT INTO cart SET user_id="${userID}", prod_id="${prodID}", qty="${Qty}"`
+    var storeData = `INSERT INTO cart SET user_id="${userID}", prod_id="${prodID}", qty="${Qty}", prodName="${prodName}", prodPrice="${prodPrice}"`
     db.query(storeData, (err, result) => { 
       if(err) {
         throw err
@@ -519,36 +525,104 @@ app.post('/Order', (req, res) => {
 })
 // Add to cart
 
+app.post('/Delcart', (req, res) =>
+{
+  var cartID = req.body.cartID;
+  // console.log(cartID)
+    var delCart = `DELETE FROM cart WHERE id="${cartID}"`
+    db.query(delCart, (err, results) => { 
+      if(err) throw err;
+      else
+      {
+        res.send(results);
+      }
+    });
+})
+// Delete selected item in cart table
+
 app.post('/Cart', (req, res) =>
 {
   var userID = req.body.UserID;
     var pullData = `SELECT * FROM cart WHERE user_id="${userID}"`
-    db.query(pullData, (err, hasil) => { 
+    db.query(pullData, (err, results) => { 
       if(err) {
         throw err
       } else {
-        res.send('1');
-        // console.log(results)
-        var cartitem = [];
-        for (var i=0; i<hasil.length; i++)
-        {
-          var produkID = hasil[i].prod_id;
-          // console.log(produkID);
-          // var pulldetprod = `SELECT * FROM product WHERE id="${produkID}"`
-          // db.query(pulldetprod, (err, results) => {
-          //   if (err) throw err;
-          //   else
-          //   {
-          //     // cartitem.push(results);
-          //     console.log(results)
-          //   }
-          // })
-        }
-        // console.log(cartitem);
+        res.send(results);
       };
     });
 })
-// Get user cart list
+// Display cart list
 
+app.get('/Cart', (req, res) => 
+{
+  var pullDevMeth = "SELECT * FROM delivery"
+  db.query(pullDevMeth, (err, result) =>
+  {
+    if (err) throw err
+    else
+    {
+      res.send(result)
+    }
+  })
+})
+// take list of Delivery Method
+
+app.post('/Defaultaddress', (req, res) =>
+{
+  var userID = req.body.UserID;
+    var pullData = `SELECT * FROM userprofile WHERE id="${userID}"`
+    db.query(pullData, (err, results) => { 
+      if(err) {
+        throw err
+      } else {
+        res.send(results);
+      };
+    });
+})
+// Request default address from userprofile table
+
+// app.post('/Cart', (req, res) =>
+// {
+//   var userID = req.body.UserID;
+//   var cartitem = [];
+//     var pullData = `SELECT * FROM cart WHERE user_id="${userID}"`
+//     db.query(pullData, (err, hasil) => { 
+//       if(err) {
+//         throw err
+//       } else {
+//         var counter = 0;
+//         for (var i=0; i<hasil.length; i++)
+//         {
+//           var produkID = hasil[i].prod_id;
+//           // console.log(produkID);
+//           var pulldetprod = `SELECT * FROM product WHERE id="${produkID}"`
+//           db.query(pulldetprod, (err, results) => {
+//             if (err) throw err;
+//             else
+//             {           
+//               cartitem.push(results);
+//               counter++;
+//               if (counter === hasil.length)
+//               {
+//                 // console.log(cartitem);
+//                 var finalData =
+//                 [
+//                   {
+//                     hasil
+//                   },
+//                   {
+//                     cartitem
+//                   }
+//                 ]
+//                 res.send(finalData);
+//               }
+//             }
+//           })
+//         }
+//       };
+//     });
+// })
+// Get user cart list
 
 app.listen(3001);

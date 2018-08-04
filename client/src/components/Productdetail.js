@@ -35,6 +35,7 @@ class Productdetail extends Component
             nums: this.state.nums + 1
         })
     }
+    // Function to add item
       
     decrement = () => 
     {  
@@ -49,6 +50,7 @@ class Productdetail extends Component
             })
         }
     }
+    // Function to reduce item
 
     order = (ordered) =>
     {
@@ -57,12 +59,14 @@ class Productdetail extends Component
         // console.log(ordered.prodPrice.value);
         const cookies = new Cookies();
         var userID = cookies.get('sessionID')
-        console.log('jumlah barang: ' + ordered.qty.value);
-        console.log('id produk: ' + ordered.prodID.value);
+        // console.log('jumlah barang: ' + ordered.qty.value);
+        // console.log('id produk: ' + ordered.prodID.value);
         axios.post('http://localhost:3001/Order', {
             UserID: userID,
             prodQty: ordered.qty.value,
-            prodID: ordered.prodID.value
+            prodID: ordered.prodID.value,
+            prodName: ordered.prodName.value,
+            prodPrice: ordered.prodPrice.value
         })
         .then((response) => {
             console.log(response.data)
@@ -75,6 +79,7 @@ class Productdetail extends Component
             }
         })
     }
+    // Function to send the order to cart table
 
     render()
     {
@@ -109,6 +114,8 @@ class Productdetail extends Component
                                         <button className="btn btn-danger width90" onClick={() => this.decrement()}><i className="fa fa-minus"></i></button>&nbsp;
                                         <input className="text-center styleproddet" ref="qty" type="number" value={this.state.nums}/>&nbsp;
                                         <input className="text-center styleproddet" ref="prodID" type="hidden" value={prodID}/>&nbsp;
+                                        <input className="text-center styleproddet" ref="prodName" type="hidden" value={prodname}/>&nbsp;
+                                        <input className="text-center styleproddet" ref="prodPrice" type="hidden" value={prodprice}/>&nbsp;
                                         <button className="btn btn-success width90" onClick={() => this.increment()}><i className="fa fa-plus"></i></button><br/><br/>
                                         <Link to="#" className="btn btn-success" onClick={() => this.order(this.refs)}>
                                             <i className="fa fa-shopping-cart"></i> Add To Cart

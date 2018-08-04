@@ -19,6 +19,7 @@ class Product extends Component
     
     componentWillMount = () =>
     {
+        var self = this;
         $(document).ready(() => {
             // code to read selected table row cell data (values).
             $("#myTable").on('click','.btnDel', function() {
@@ -29,8 +30,21 @@ class Product extends Component
                 console.log(col1);
                 axios.post('http://localhost:3001/Delproduct', {
                     produkID: col1
+                }).then((response) => {
+                    if (response)
+                    {
+                        axios.get('http://localhost:3001/Product')
+                        .then((response) => 
+                        {
+                            // console.log(response.data[1]);
+                            self.setState({
+                                prodlist: response.data[0],
+                                catlist: response.data[1]
+                            })
+                            // console.log(this.state.catlist)
+                        })
+                    }
                 })
-                window.location.reload();
            });
         });
     };
@@ -69,7 +83,7 @@ class Product extends Component
         formData.append('prodDesc', this.state.prodDesc);
         formData.append('prodImg', this.state.prodImg);
 
-        axios.post('http://localhost:3001/Addprod/', formData);
+        axios.post('http://localhost:3001/Addprod/', formData)
         window.location.reload();
     }
     // buat kirim ke backend
