@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
 import $ from 'jquery';
+import Cookies from 'universal-cookie';
+import { Redirect } from 'react-router-dom';
+
+const cookies = new Cookies();
 
 class Category extends Component
 {
@@ -86,6 +90,12 @@ class Category extends Component
 
     render()
     {
+        if (cookies.get('adminID') === undefined)
+        {
+            return <Redirect to='/'/>
+        }
+        // to check if the admin already login or not
+        
         const daftarkategori = this.state.catlist.map((item, index) =>
         {
             let catid = item.id;

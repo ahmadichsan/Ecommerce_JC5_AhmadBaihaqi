@@ -25,7 +25,7 @@ class Navbar extends Component
                             </a>
                             <ul className="dropdown-menu dropdown-user">
                                 <li>
-                                    <Link to="/"><i className="fa fa-sign-out-alt fa-fw"></i> Logout</Link>
+                                    <Link to="/Logout"><i className="fa fa-sign-out-alt fa-fw"></i> Logout</Link>
                                 </li>
                             </ul>
                         </li>

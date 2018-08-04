@@ -1,17 +1,9 @@
 import React, { Component } from 'react';
 
-// import Cookies from 'universal-cookie';
-
-
 class Aboutus extends Component
 {
     render()
     {
-        // const cookies = new Cookies();
-        // console.log(cookies.get('myCat')); // Pacman
-        // cookies.remove('myCat');
-        // console.log(cookies.get('myCat')); // Pacman
-
         return (
             <div id="homeback">
                 <div className="padtop padbot">    

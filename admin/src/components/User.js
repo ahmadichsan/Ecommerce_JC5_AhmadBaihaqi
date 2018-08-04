@@ -1,10 +1,20 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar';
+import Cookies from 'universal-cookie';
+import { Redirect } from 'react-router-dom';
+
+const cookies = new Cookies();
 
 class Userdata extends Component
 {
     render()
     {
+        if (cookies.get('adminID') === undefined)
+        {
+            return <Redirect to='/'/>
+        }
+        // to check if the admin already login or not
+        
         return (
             <div id="backcoloradm">
             <Navbar/>

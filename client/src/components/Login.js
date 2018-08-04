@@ -27,8 +27,7 @@ class Login extends Component
             this.setState({
                 redirect: true
             })
-        });
-        
+        });    
     }
 
     render()
@@ -59,9 +58,6 @@ class Login extends Component
                                                 </label>
                                             </div>
                                             <button type="button" onClick={() => this.login(this.refs)} className="btn btn-lg btn-success btn-block">Login</button>
-                                            {/* <Link to="/Userprofile" id="nodecor">
-                                                <input className="btn btn-lg btn-success btn-block" type="button" value="Login" style={{}}/>
-                                            </Link> */}
                                         </fieldset>
                                     </form>
                                 </div>

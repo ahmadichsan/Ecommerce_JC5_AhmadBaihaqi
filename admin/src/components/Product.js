@@ -3,6 +3,10 @@ import Navbar from './Navbar';
 import axios from 'axios';
 import $ from 'jquery';
 import { Link } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+import { Redirect } from 'react-router-dom';
+
+const cookies = new Cookies();
 
 class Product extends Component
 {
@@ -105,6 +109,12 @@ class Product extends Component
 
     render()
     {
+        if (cookies.get('adminID') === undefined)
+        {
+            return <Redirect to='/'/>
+        }
+        // to check if the admin already login or not
+        
         const daftarproduk = this.state.prodlist.map((item, index) =>
         {
             var prodcat = item.cat_id;

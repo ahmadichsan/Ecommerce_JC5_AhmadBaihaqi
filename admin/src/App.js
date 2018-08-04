@@ -9,6 +9,7 @@ import Invoice from './components/Invoice';
 import Category from './components/Category';
 import Product from './components/Product';
 import Productedit from './components/Productedit';
+import Logout from './components/Logout';
 
 class App extends Component {
   render()
@@ -22,6 +23,7 @@ class App extends Component {
         <Route path="/Category" component={Category}/>
         <Route path="/Product" component={Product}/>
         <Route path="/Editproduct" component={Productedit}/>
+        <Route path="/Logout" component={Logout}/>
     </div>
     );
   }

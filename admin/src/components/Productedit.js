@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
 import { Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+
+const cookies = new Cookies();
 
 class Productedit extends Component
 {
@@ -107,9 +110,11 @@ class Productedit extends Component
 
     render()
     {
-        if (this.state.redirect) {
-            return <Redirect to='/Home'/>
-          }
+        if (cookies.get('adminID') === undefined)
+        {
+            return <Redirect to='/'/>
+        }
+        // to check if the admin already login or not
         
         const datakategori = [].concat(this.state.catlist)
         .sort((a, b) => a.category > b.category)

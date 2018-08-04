@@ -46,33 +46,32 @@ app.post('/admlogin', (req, res) => {
   
   // console.log(Username);
   // console.log(Password);
-  // res.end();
   
   const encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
   // console.log(encpass);
 
   var pullData = "SELECT * FROM admin";
-  db.query(pullData, (err, result) => { 
-    if(err) throw err;
-    else {
+  db.query(pullData, (err, result) => {
+    if (err) throw err;
+    else
+    {
       for (var i=0; i<result.length; i++)
       {
-        if (Username === result[i].Username && encpass === result[i].Password)
+        if (Username === result[i].username && Password === result[i].password)
         {
           console.log('Login Berhasil');
-          var status = '1';
-          res.send(status);
+          // console.log(result[i].id)
+          var userID = result[i].id;
+          res.send((userID).toString());
           break;
         }
         else if (i === result.length-1)
         {
           console.log('Data tidak ditemukan, login gagal');
-          var status = '-1';
-          res.send(status);
         }
       }
     }
-  });
+  })
 })
 // Admin Login
 // NOTE: Admin login is not set up yet, also at the front-end the redux for login still not set up

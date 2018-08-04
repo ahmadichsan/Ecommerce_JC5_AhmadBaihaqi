@@ -1,10 +1,19 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import Cookies from 'universal-cookie';
+
+const cookies = new Cookies();
 
 class Paymenthis extends Component
 {
     render()
     {
+        if (cookies.get('sessionID') === undefined)
+        {
+            return <Redirect to='/Login'/>
+        }
+        // to check if the users already login or not
+
         return (
             <div id="homeback">
                 <div className="container padtop padbot">
