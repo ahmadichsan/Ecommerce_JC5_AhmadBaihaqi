@@ -51,6 +51,14 @@ class Productedit extends Component
     }
     // To send request product and category list to server and display the response
 
+    descChange = (e) =>
+    {
+        this.setState({
+            inputdesc: e.target.value
+        })
+    }
+    // to make the description input value editable
+
     change = (e) =>
     {
         this.setState({
@@ -71,6 +79,7 @@ class Productedit extends Component
             default:
         }
     }
+    // to take the image file
 
     editprod = (editprod) =>
     {
@@ -82,6 +91,7 @@ class Productedit extends Component
             inputdesc: editprod.proddesc.value
         })
     }
+    // to change the value that want to be submited
 
     updateData = (e) =>
     {
@@ -106,7 +116,7 @@ class Productedit extends Component
         // console.log(this.state.inputprodcat);
         // console.log(this.state.inputimg);
     }
-    // buat kirim ke backend
+    // send all data to backend
 
     render()
     {
@@ -115,6 +125,9 @@ class Productedit extends Component
             return <Redirect to='/'/>
         }
         // to check if the admin already login or not
+
+        if (this.state.redirect) return <Redirect to='/Product'/>
+        // to redirect after add product
         
         const datakategori = [].concat(this.state.catlist)
         .sort((a, b) => a.category > b.category)
@@ -178,8 +191,8 @@ class Productedit extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Product Description</label>
                                             <div className="col-md-5">
-                                                <input type='text' ref="proddesc" defaultValue={this.state.inputdesc}
-                                                placeholder="Product Desc" className="form-control" required/>
+                                                <textarea type='text' ref="proddesc" value={this.state.inputdesc}
+                                                placeholder="Product Desc" className="form-control" onChange={this.descChange} required></textarea>
                                             </div>
                                         </div>
                                         

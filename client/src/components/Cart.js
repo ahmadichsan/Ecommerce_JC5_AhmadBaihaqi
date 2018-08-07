@@ -10,10 +10,8 @@ class Cart extends Component
 {
     state =
     {
-        nums: 0,
         detailCart: [],
-        status: 0,
-        operation: '',
+        subPrice: [],
         fullname: '',
         address: '',
         phone: '',
@@ -21,7 +19,7 @@ class Cart extends Component
         chooseitem: ['Your Cart is Empty'],
         devMethod: [],
         devPrice: 0,
-        grandTotal: 0
+        grandTotal: 0,
     }
 
     componentWillMount = () =>
@@ -46,10 +44,13 @@ class Cart extends Component
                         })
                         .then((response) => 
                         {
-                            var takeData = response.data;
+                            var takeData = response.data[0];
+                            var subprice = response.data[1];
                             // console.log(takeData);
+                            // console.log(subprice);
                             self.setState({
-                                detailCart: takeData
+                                detailCart: takeData,
+                                subPrice: subprice
                             })
                             // console.log(this.state.detailCart)
                         })
@@ -62,54 +63,62 @@ class Cart extends Component
 
     componentDidMount = () =>
     {
+        var self = this;
         var userID = cookies.get('sessionID');
-        axios.post('http://localhost:3001/Cart', {
-            UserID: userID
-        })
-        .then((response) => 
+        if (cookies.get('sessionID') !== undefined)
         {
-            var takeData = response.data;
-            // console.log(takeData);
-            this.setState({
-                detailCart: takeData
+            axios.post('http://localhost:3001/Cart', {
+                UserID: userID
             })
-            // console.log(this.state.detailCart)
-        })
-        axios.get('http://localhost:3001/Cart')
-        .then((response) => {
-            var devMeth = response.data;
-            // console.log(devMeth);
-            this.setState({
-                devMethod: devMeth
+            .then((response) => 
+            {
+                console.log(response.data)
+                var takeData = response.data[0];
+                var subprice = response.data[1];
+                // console.log(takeData);
+                // console.log(subprice);
+                self.setState({
+                    detailCart: takeData,
+                    subPrice: subprice
+                })
+                // console.log(typeof(subprice))
+                // console.log(this.state.detailCart)
             })
-        })
-    }
-    // to take the cart data
+            // to take the cart data
 
-    increment = (val) => 
-    {  
-        this.setState({
-            nums: this.state.nums + 1,
-            status: val,
-            operation: 'increment'
-        })
-    }
-      
-    decrement = (val) => 
-    {  
-        this.setState({
-            nums: this.state.nums - 1,
-            status: val,
-            operation: 'decrement'
-        })
+            axios.get('http://localhost:3001/Cart')
+            .then((response) => {
+                var devMeth = response.data;
+                // console.log(devMeth);
+                self.setState({
+                    devMethod: devMeth
+                })
+            })
+            // to take the delivery method
+        }
     }
 
-    handleChange = (e) =>
+    changeQty = (e, id) =>
     {
-        this.setState({
-            nums: e.target.value
+        // console.log(e)
+        // console.log(id)
+        var userID = cookies.get('sessionID');
+        axios.post('http://localhost:3001/updateCart', {
+            QtyNew: e,
+            cartID: id,
+            userID: userID
+        }).then((respon) => {
+            var retakeCart = respon.data[0];
+            var subprice = respon.data[1];
+            // console.log(takeData);
+            // console.log(subprice);
+            this.setState({
+                detailCart: retakeCart,
+                subPrice: subprice
+            })
         })
     }
+    // to change item cart quantity and upload it into database
 
     check = () =>
     {
@@ -147,32 +156,28 @@ class Cart extends Component
 
     delivery = () =>
     {
-        // console.log('asd')
         var e = document.getElementById("delivery");
         var deliveryID = e.options[e.selectedIndex].value;
         deliveryID = parseInt(deliveryID, 10)
-        // console.log(deliveryID)
         var listDev = this.state.devMethod
 
         for (var i=0; i<listDev.length; i++)
         {
             var devID = listDev[i].id
             var devPrice = listDev[i].price
-            if (deliveryID === devID)
-            {
-                // console.log(devID)
-                // console.log(typeof(devID))
-                // console.log(typeof(deliveryID))
+            if (deliveryID === devID) 
+            {   
                 this.setState({
                     devPrice: devPrice
                 })
                 break;
             }
-            else
+            else if (deliveryID === 0)
             {
                 this.setState({
                     devPrice: 0
                 })
+                break;
             }
         }
     }
@@ -180,25 +185,19 @@ class Cart extends Component
 
     grandtots = () =>
     {
-        var totalAllItem = 0;
-        var totPrice = [];
-        this.state.detailCart.map((item, index) =>
+        var Alltotal = 0;
+        var listPrice = this.state.subPrice
+
+        for (var i=0; i<listPrice.length; i++)
         {
-            // var cartID = item.id
-            var prodPrice = item.prodPrice;
-            var prodQty = item.qty;
-
-            var totprice = prodPrice * prodQty
-            totalAllItem = totalAllItem + totprice
-
-            if (index === this.state.detailCart.length - 1) totPrice.push(totalAllItem)
-            return totPrice
-            // console.log(totalAllItem)
+            Alltotal = Alltotal + listPrice[i].tot_sub_price
+        }
+        this.setState({
+            grandTotal: Alltotal + this.state.devPrice
         })
-        // console.log(totPrice[0])
-        var totalAkhir = totPrice[0] + this.state.devPrice
-        console.log(totalAkhir)
+        console.log(Alltotal + this.state.devPrice)
     }
+    // for grandtotal
 
     render()
     {
@@ -219,36 +218,28 @@ class Cart extends Component
         {
             var cartID = item.id
             var prodName = item.prodName;
-            var prodPrice = item.prodPrice;
             var prodQty = item.qty;
-            
-            if (this.state.status === index)
+            var prodPrice = item.prodPrice;
+            var subtotal = this.state.subPrice;
+
+            for (var i=0; i<subtotal.length; i++)
             {
-                prodQty = item.qty + this.state.nums;
+                // console.log(subtotal[i].id)
+                if (subtotal[i].id === cartID)
+                {
+                    var subTotPrice = subtotal[i].tot_sub_price
+                }
             }
-
-            // if (this.state.status === index && this.state.operation === 'increment')
-            // {
-            //     prodQty = item.qty + 1;
-            // }
-            // else if (this.state.status === index && this.state.operation === 'decrement')
-            // {
-            //     prodQty = item.qty - 1;
-            // }
-
-            var totprice = prodPrice * prodQty
 
             return <tr key={index} nilai={cartID}>
                     <td>{prodName}</td>
                     <td className="text-center"><strong>{prodPrice}</strong></td>
                     <td>
                         <center style={{marginTop:15}}>
-                            <button className="btn btn-danger" onClick={() => this.decrement(index)}><i className="fa fa-minus"></i></button>&nbsp;
-                            <input className="text-center styleproddet" ref="qty" type="number" value={(prodQty < 0) ? 0 : prodQty} onChange={this.handleChange}/>&nbsp;
-                            <button className="btn btn-success" onClick={() => this.increment(index)}><i className="fa fa-plus"></i></button><br/><br/>
+                            <input className="text-center styleproddet" ref="qty" type="number" min={1} defaultValue={prodQty} onChange={(e) => this.changeQty(e.target.value, cartID)}/>&nbsp;
                         </center>
                     </td>
-                    <td className="text-right"><strong>{totprice}</strong></td>
+                    <td className="text-right"><strong>{subTotPrice}</strong></td>
                     <td className="text-center">
                         <button type="button" className="btn btn-danger btnDel">
                             <span className="fa fa-trash-alt"></span>
@@ -268,26 +259,8 @@ class Cart extends Component
 
             return <option key={index} value={devID}>{devName}</option>
         })
-        // for mapping the dev=livery method
-
-        // var totalAllItem = 0;
-        // var totPrice = [];
-        // this.state.detailCart.map((item, index) =>
-        // {
-        //     // var cartID = item.id
-        //     var prodPrice = item.prodPrice;
-        //     var prodQty = item.qty;
-
-        //     var totprice = prodPrice * prodQty
-        //     totalAllItem = totalAllItem + totprice
-
-        //     if (index === this.state.detailCart.length - 1) totPrice.push(totalAllItem)
-        //     return totPrice
-        //     // console.log(totalAllItem)
-        // })
-        // // console.log(totPrice[0])
-        // var totalAkhir = totPrice[0] + this.state.devPrice
-
+        // for mapping the delivery method
+        
         return (
             <div id="homeback">
                <div className="container padbot padtop">
@@ -336,7 +309,7 @@ class Cart extends Component
                                                     <td></td>
                                                     <td className="text-right">
                                                         <select id="delivery" onChange={this.delivery}>
-                                                            <option>Choose one</option>
+                                                            <option value={0}>Choose one</option>
                                                             {devList}
                                                         </select>
                                                     </td>
@@ -358,8 +331,7 @@ class Cart extends Component
                                                         <h3>Total</h3>
                                                     </td>
                                                     <td className="text-right">
-                                                        {/* <h3>{totalAkhir}</h3> */}
-                                                        <span onCompositionUpdate={this.grandtots}>asd</span>
+                                                        <h3>{this.state.grandTotal}</h3>
                                                     </td>
                                                     <td></td>
                                                 </tr>

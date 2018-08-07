@@ -9,7 +9,7 @@ class Productdetail extends Component
     {
         detprod: [],
         categoryname: '',
-        nums: 0,
+        nums: 1,
         redirect: false
     }
 
@@ -29,6 +29,13 @@ class Productdetail extends Component
     }
     // To send request product and category list to server and display the response
 
+    Qty = (e) =>
+    {
+        this.setState({
+            nums: e.target.value
+        })
+    }
+
     increment = () => 
     {  
         this.setState({
@@ -43,10 +50,10 @@ class Productdetail extends Component
             nums: this.state.nums - 1
         })
         
-        if (this.state.nums < 1)
+        if (this.state.nums < 2)
         {
             this.setState({
-                nums: 0
+                nums: 1
             })
         }
     }
@@ -112,7 +119,7 @@ class Productdetail extends Component
                                 <div className="form-group">
                                     <center>
                                         <button className="btn btn-danger width90" onClick={() => this.decrement()}><i className="fa fa-minus"></i></button>&nbsp;
-                                        <input className="text-center styleproddet" ref="qty" type="number" value={this.state.nums}/>&nbsp;
+                                        <input className="text-center styleproddet" ref="qty" type="number" value={this.state.nums} onChange={this.Qty}/>&nbsp;
                                         <input className="text-center styleproddet" ref="prodID" type="hidden" value={prodID}/>&nbsp;
                                         <input className="text-center styleproddet" ref="prodName" type="hidden" value={prodname}/>&nbsp;
                                         <input className="text-center styleproddet" ref="prodPrice" type="hidden" value={prodprice}/>&nbsp;

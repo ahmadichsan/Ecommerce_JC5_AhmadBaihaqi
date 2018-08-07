@@ -20,7 +20,8 @@ class Login extends Component
         axios.post('http://localhost:3001/Login', {
             username: username,
             password: password
-        }).then((response) => {
+        })
+        .then((response) => {
             var userSession = response.data;
             // console.log(response.data);
             cookies.set('sessionID', userSession, { path: '/' });

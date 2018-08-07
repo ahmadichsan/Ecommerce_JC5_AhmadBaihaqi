@@ -154,8 +154,9 @@ input[type="radio"] {
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   height: auto;
-  -webkit-appearance: none;
+  /* -webkit-appearance: none; */
 }
+
 input[type="search"] {
   -webkit-box-sizing: content-box;
      -moz-box-sizing: content-box;

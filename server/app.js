@@ -118,7 +118,7 @@ app.post('/Addprod', (req, res) =>
   // console.log('4: ' + prod_price);
   // console.log('5: ' + prod_cat);
   // console.log('6: ' + prod_desc);
-  // console.log('7: ' + prod_img);
+  console.log('7: ' + prod_img);
 
   if(prod_name !== '' && prod_price !== '' && prod_cat !== '' && prod_desc !== '' && prod_img !== '')
   {
@@ -269,8 +269,8 @@ app.post('/Delproduct', (req, res) =>
 
 // ========================= ADMIN - Category =========================
 
-app.get('/Category', (req, res) => {
-  
+app.get('/Category', (req, res) =>
+{  
   var pullData = 'SELECT * FROM category'
   db.query(pullData, (err, result) => { 
     if(err) {
@@ -393,12 +393,12 @@ app.post('/Login', (req, res) =>
 {
   var Username = req.body.username;
   var Password = req.body.password;
-            
+
   // console.log(Username);
   // console.log(Password);
   
   var encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
-  // console.log(encpass);
+  // // console.log(encpass);
 
   var pullData = "SELECT * FROM userprofile";
   db.query(pullData, (err, result) => {
@@ -508,8 +508,6 @@ app.post('/Order', (req, res) => {
   // console.log(prodName);
   // console.log(prodPrice);
 
-  if (Qty > 0)
-  {
     var storeData = `INSERT INTO cart SET user_id="${userID}", prod_id="${prodID}", qty="${Qty}", prodName="${prodName}", prodPrice="${prodPrice}"`
     db.query(storeData, (err, result) => { 
       if(err) {
@@ -520,7 +518,6 @@ app.post('/Order', (req, res) => {
         // console.log('cart success')
       };
     });
-  }
 })
 // Add to cart
 
@@ -542,7 +539,8 @@ app.post('/Delcart', (req, res) =>
 app.post('/Cart', (req, res) =>
 {
   var userID = req.body.UserID;
-    var pullData = `SELECT * FROM cart WHERE user_id="${userID}"`
+    var pullData = `SELECT * FROM cart WHERE user_id="${userID}";`
+    pullData += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
     db.query(pullData, (err, results) => { 
       if(err) {
         throw err
@@ -552,6 +550,34 @@ app.post('/Cart', (req, res) =>
     });
 })
 // Display cart list
+
+app.post('/updateCart', (req, res) =>
+{
+  var cartID = req.body.cartID;
+  var NewQty = req.body.QtyNew;
+  var userID = req.body.userID;
+  // console.log(NewQty)
+  // console.log(cartID)
+  
+  var updateCart = `UPDATE cart SET qty="${NewQty}" WHERE id="${cartID}"`
+  // to update cart
+  db.query(updateCart, (err, results) => { 
+    if(err) throw err;
+    else
+    {
+      var retake = `SELECT * FROM cart WHERE user_id="${userID}";`
+      retake += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
+      db.query(retake, (err, results) => { 
+        if(err) {
+          throw err
+        } else {
+          res.send(results);
+        };
+      });
+    }
+  });
+})
+// Update selected item in cart table
 
 app.get('/Cart', (req, res) => 
 {
