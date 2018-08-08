@@ -35,7 +35,6 @@ db.connect();
 
 app.get('/', (req, res) => {
   res.send('Halaman Server')
-  // res.sendFile('/images/box1.jpg', {root : __dirname})
 })
 // Starting point
 
@@ -74,7 +73,7 @@ app.post('/admlogin', (req, res) => {
   })
 })
 // Admin Login
-// NOTE: Admin login is not set up yet, also at the front-end the redux for login still not set up
+// NOTE: Admin login setup is done
 
 // ========================= ADMIN - Product =========================
 
@@ -195,30 +194,61 @@ app.post('/Editproduct', (req, res) =>
     {
       if(err)
       {
-        // res.send('Upload failed');
         console.log('Upload failed');
       }
       else
-      {
-        // res.send('Upload berhasil');
+      {        
         console.log('Upload succeed');
-        var editData = `UPDATE product SET prod_name="${prod_name}", prod_img='${prod_img}', prod_price='${prod_price}', cat_id='${prod_cat}', prod_desc='${prod_desc}' WHERE id='${prod_id}' `;
-        db.query(editData, (err, result) => { 
+        var editData = `UPDATE product SET prod_name="${prod_name}", prod_img='${prod_img}',
+        prod_price='${prod_price}', cat_id='${prod_cat}', prod_desc='${prod_desc}' WHERE id='${prod_id}'`;
+        // query above to edit data in product table
+        db.query(editData, (err, result) =>
+        { 
           if(err) throw err;
+          else
+          {
+            var editCart = `UPDATE cart SET prodName="${prod_name}", prodPrice="${prod_price}" WHERE prod_id="${prod_id}"`
+            // query above to edit data in cart with selected product id that has been edited
+            db.query(editCart, (err, result) => 
+            {
+              if (err) throw err;
+              else
+              {
+                res.send('1')
+              }
+            })
+          }
         });
       }
     })
   }
   else
   {
-    var editData = `UPDATE product SET prod_name="${prod_name}", prod_price='${prod_price}', cat_id='${prod_cat}', prod_desc='${prod_desc}' WHERE id='${prod_id}' `;
-    db.query(editData, (err, result) => { 
+    var editData = `UPDATE product SET prod_name="${prod_name}", prod_price='${prod_price}',
+    cat_id='${prod_cat}', prod_desc='${prod_desc}' WHERE id='${prod_id}' `;
+    // query above to edit data in product table
+    db.query(editData, (err, result) =>
+    { 
       if(err) throw err;
+      else
+      {
+        var editCart = `UPDATE cart SET prodName="${prod_name}", prodPrice="${prod_price}" WHERE prod_id="${prod_id}"`;
+        // query above to edit data in cart with selected product id that has been edited
+        db.query(editCart, (err, result) => 
+        {
+          if (err) throw err;
+          else
+          {
+            res.send('1')
+          }
+        })
+      }
     });
     console.log('6: tanpa gambar')
   }
 })
 // Admin Edit Product - Take value from Client and send it into database (update database)
+// Also, edit in cart table (prodName and prodPrice coulumn)
 
 app.post('/Delproduct', (req, res) =>
 {  
@@ -265,7 +295,7 @@ app.post('/Delproduct', (req, res) =>
   // Notes: we have to update the total product first, then deleted the data
 })
 // Admin Del Product
-// NOTE: Product set up, DONE
+// NOTE: Product set up, done
 
 // ========================= ADMIN - Category =========================
 
@@ -549,7 +579,10 @@ app.post('/Cart', (req, res) =>
       };
     });
 })
-// Display cart list
+// Display cart list - this works, but if admin change the price, it will not update automatically
+// because i take the value of the price, not the id of the product then take the price
+// solutin: function when admin edit the product data, its also change the table cart (prodName and prodPrice coulumn)
+// see app.post('/Editproduct')
 
 app.post('/updateCart', (req, res) =>
 {
@@ -560,13 +593,14 @@ app.post('/updateCart', (req, res) =>
   // console.log(cartID)
   
   var updateCart = `UPDATE cart SET qty="${NewQty}" WHERE id="${cartID}"`
-  // to update cart
-  db.query(updateCart, (err, results) => { 
+  // to update cart qty
+  db.query(updateCart, (err, results) => 
+  { 
     if(err) throw err;
     else
     {
-      var retake = `SELECT * FROM cart WHERE user_id="${userID}";`
-      retake += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
+      var retake = `SELECT * FROM cart WHERE user_id="${userID}";` // retake the cart list
+      retake += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"` // count the subPrice
       db.query(retake, (err, results) => { 
         if(err) {
           throw err
@@ -605,27 +639,110 @@ app.post('/Defaultaddress', (req, res) =>
       };
     });
 })
-// Request default address from userprofile table
+// Request default address from userprofile table to be displayed in cart component when needed
+
+app.post('/Checkout', (req, res) =>
+{
+  var fullname = req.body.fullname;
+  var address = req.body.address;
+  var phone = req.body.phone;
+  var totalOrder = req.body.totalOrder;
+  var userID = req.body.userID;
+  var deliveryChoosen = req.body.deliveryMethod;
+  var statuscheckout = req.body.statusCheckout;
+  var methPay = req.body.methPay
+  var devPayPrice = req.body.devPayPrice
+
+  console.log(fullname);
+  console.log(address);
+  console.log(phone);
+  console.log(totalOrder);
+  console.log(userID);
+  console.log(deliveryChoosen);
+  console.log(statuscheckout);
+  console.log(methPay);
+  console.log(devPayPrice);
+
+
+
+  // if (statuscheckout === 1)
+  // {
+    // console.log('leaving cart')
+    // var updateCart = `UPDATE cart SET checkoutstat_id="${statuscheckout}" WHERE user_id="${userID}"`;
+    // db.query(updateCart, (err, results) =>
+    // { 
+    //   if(err)
+    //   {
+    //     throw err
+    //   } else 
+    //   {
+        // res.send(results);
+  //     };
+  //   });
+
+  // }
+
+
+
+  // var pullData = `SELECT * FROM cart WHERE user_id="${userID}";`
+  // pullData += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
+  // db.query(pullData, (err, results) => { 
+  //   if(err) {
+  //     throw err
+  //   } else {
+  //     res.send(results);
+  //   };
+  // });
+})
+// for Checkout
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // app.post('/Cart', (req, res) =>
 // {
 //   var userID = req.body.UserID;
-//   var cartitem = [];
-//     var pullData = `SELECT * FROM cart WHERE user_id="${userID}"`
+//     var pullData = `SELECT * FROM cart WHERE user_id="${userID}";`
+//     pullData += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
 //     db.query(pullData, (err, hasil) => { 
 //       if(err) {
 //         throw err
 //       } else {
+//         // console.log(hasil[0])
 //         var counter = 0;
-//         for (var i=0; i<hasil.length; i++)
+//         var cartitem = [];
+//         for (var i=0; i<hasil[0].length; i++)
 //         {
-//           var produkID = hasil[i].prod_id;
-//           // console.log(produkID);
+//           // console.log(hasil[0][i].prod_id)
+//           var produkID = hasil[0][i].prod_id;
 //           var pulldetprod = `SELECT * FROM product WHERE id="${produkID}"`
-//           db.query(pulldetprod, (err, results) => {
+//           db.query(pulldetprod, (err, results) => 
+//           {
 //             if (err) throw err;
 //             else
-//             {           
+//             {
+//               // console.log(results) 
 //               cartitem.push(results);
 //               counter++;
 //               if (counter === hasil.length)
@@ -635,12 +752,16 @@ app.post('/Defaultaddress', (req, res) =>
 //                 [
 //                   {
 //                     hasil
+//                     // ambil dari tabel cart
 //                   },
 //                   {
 //                     cartitem
+//                     // ambil dari tabel product
 //                   }
 //                 ]
+//                 // res.send('1')
 //                 res.send(finalData);
+//                 // console.log(finalData)
 //               }
 //             }
 //           })
@@ -648,6 +769,20 @@ app.post('/Defaultaddress', (req, res) =>
 //       };
 //     });
 // })
-// Get user cart list
+// Get user cart list - still maintain
+
+// app.post('/Cart', (req, res) =>
+// {
+//   var userID = req.body.UserID;
+//     var pullData = `SELECT * FROM cart WHERE user_id="${userID}";`
+//     db.query(pullData, (err, hasil) => { 
+//       if(err) {
+//         throw err
+//       } else {
+//         console.log(hasil)
+//       };
+//     });
+// })
+// get user cart list - still maintain from above
 
 app.listen(3001);

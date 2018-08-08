@@ -19,6 +19,7 @@ import Invoice from './components/Invoice';
 import Cart from './components/Cart';
 import Footer from './components/Footer';
 import Logout from './components/Logout';
+// import CobaCart from './components/CobaCart';
 
 class App extends Component {
   render() {
@@ -41,6 +42,7 @@ class App extends Component {
           <Route path="/Paymentfailed" component={Paymentfailed}/>
           <Route path="/Invoice" component={Invoice}/>
           <Route path="/Cart" component={Cart}/>
+          {/* <Route path="/Cart" component={CobaCart}/> */}
           <Route path="/Logout" component={Logout}/>
         <Footer/>
       </div>

@@ -103,10 +103,15 @@ class Productedit extends Component
         formData.append('prodCat', this.state.inputprodcat);
         formData.append('prodDesc', this.state.inputdesc);
         formData.append('prodImg', this.state.inputimg);
-        axios.post('http://localhost:3001/Editproduct/', formData);
-
-        this.setState({
-            redirect: true
+        axios.post('http://localhost:3001/Editproduct/', formData)
+        .then((respon) =>
+        {
+            if (respon.data === 1)
+            {
+                this.setState({
+                    redirect: true
+                })
+            }
         })
 
         // console.log(this.state.inputid);

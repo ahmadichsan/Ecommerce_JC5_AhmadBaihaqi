@@ -52,11 +52,11 @@ class Paymenthis extends Component
                                                             </ul>
                                                         </div>
                                                     </td>
-                                                    <td colspan="2">
-                                                        <span claassName="">
+                                                    <td colSpan="2">
+                                                        <span className="">
                                                             Display&nbsp;
                                                                 <select>
-                                                                    <option value="5" selected>5</option>
+                                                                    <option value="5">5</option>
                                                                     <option value="15">15</option>
                                                                     <option value="20">20</option>
                                                                     <option value="25">25</option>

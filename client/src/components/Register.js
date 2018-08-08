@@ -73,6 +73,7 @@ class Register extends Component
     //         })
     //     }
     // }
+    // confirm passwords
 
     render()
     {

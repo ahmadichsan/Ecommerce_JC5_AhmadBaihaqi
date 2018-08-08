@@ -6,7 +6,7 @@ import $ from 'jquery';
 
 const cookies = new Cookies();
 
-class Cart extends Component
+class CobaCart extends Component
 {
     state =
     {
@@ -20,8 +20,7 @@ class Cart extends Component
         devMethod: [],
         devPrice: 0,
         grandTotal: 0,
-        paymentMeth: '',
-        redirect: false
+        paymentMeth: ''
     }
 
     componentDidMount = () =>
@@ -35,36 +34,39 @@ class Cart extends Component
             })
             .then((response) => 
             {
+                console.log(response.data)
+                console.log(response.data[1])
+                console.log(response.data[1].cartitem)
                 // console.log(response.data[0][0].checkoutstat_id)
-                var takeData = response.data[0]; // contain list of item in cart based on userID
-                var subprice = response.data[1]; // contain price per cart ID based on userID
-                var statusout = response.data[0][0].checkoutstat_id
+                // var takeData = response.data[0]; // contain list of item in cart based on userID
+                // var subprice = response.data[1]; // contain price per cart ID based on userID
+                // var statusout = response.data[0][0].checkoutstat_id
                 
-                if (statusout !== 1)
-                {
-                    self.setState({
-                        detailCart: takeData,
-                        subPrice: subprice
-                    })
-                }
-                else if (statusout === 1)
-                {
-                    self.setState({
-                        detailCart: []
-                    })
-                }
+                // if (statusout !== 1)
+                // {
+                //     self.setState({
+                //         detailCart: takeData,
+                //         subPrice: subprice
+                //     })
+                // }
+                // else if (statusout === 1)
+                // {
+                //     self.setState({
+                //         detailCart: []
+                //     })
+                // }
 
-                var Alltotal = 0;
-                var listPrice = this.state.subPrice
-                for (var i=0; i<listPrice.length; i++)
-                {
-                    Alltotal = Alltotal + listPrice[i].tot_sub_price
-                }
-                // looping to sum the total price of the all item
-                this.setState({
-                    grandTotal: Alltotal
-                })
-                // initial grandtotal before select the delivery method
+                // var Alltotal = 0;
+                // var listPrice = this.state.subPrice
+                // for (var i=0; i<listPrice.length; i++)
+                // {
+                //     Alltotal = Alltotal + listPrice[i].tot_sub_price
+                // }
+                // // looping to sum the total price of the all item
+                // this.setState({
+                //     grandTotal: Alltotal
+                // })
+                // // initial grandtotal before select the delivery method
             })
             // to take the cart data
 
@@ -278,7 +280,7 @@ class Cart extends Component
         var userID = cookies.get('sessionID');
         var checkoutstats = 1;
         var methPay = this.state.paymentMeth;
-        var devPayPrice = this.state.devPrice;
+        var methPayPrice = this.state.devPrice;
         // console.log(val.fullname.value)
         // console.log(val.address.value)
         // console.log(val.phone.value)
@@ -286,36 +288,25 @@ class Cart extends Component
         // console.log(cookies.get('sessionID'))
         // console.log(checkoutstats)
 
-        
-        $(document).ready(() => {
-            var choosenDelivery = $("#delivery option:selected").text();
-            // console.log(choosenDelivery)
-            if (idDelivery !== '0' && recieveby !== '' && recieveAdd !== '' && recievePhone !== '' && methPay !== '') // if user already choose the delivery method, then checkout
-            {
-                axios.post('http://localhost:3001/Checkout', 
-                {
+        if (idDelivery !== '0') // if user already choose the delivery method, then checkout
+        {
+            $(document).ready(() => {
+                var choosenDelivery = $("#delivery option:selected").text();
+                // console.log(choosenDelivery)
+
+                axios.post('http://localhost:3001/Checkout', {
                     fullname: recieveby,
                     address: recieveAdd,
                     phone: recievePhone,
                     totalOrder: grandTotal,
                     userID: userID,
-                    deliveryMethod: choosenDelivery, // delivery method
+                    deliveryMethod: choosenDelivery,
                     statusCheckout: checkoutstats,
                     methPay: methPay,
-                    devPayPrice: devPayPrice
+                    methPayPrice: methPayPrice
                 })
-                .then((respon) =>
-                {
-                    var response = respon.data;
-                    if (response === 1)
-                    {
-                        this.setState({
-                            redirect: true
-                        })
-                    }
-                })
-            }
-        })
+            })
+        }
     }
 
     render()
@@ -325,9 +316,6 @@ class Cart extends Component
             return <Redirect to='/Login'/>
         }
         // to check if the users already login or not
-
-        if (this.state.redirect) return <Redirect to="/Checkout"/>
-        // if checkout success, then redirect to checkout page
 
         const noItem = this.state.chooseitem.map((item, index) => {
             return <tr key={index}>
@@ -502,4 +490,4 @@ class Cart extends Component
         );
     }
 }
-export default Cart;
+export default CobaCart;

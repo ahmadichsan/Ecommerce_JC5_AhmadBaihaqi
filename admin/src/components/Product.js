@@ -52,7 +52,7 @@ class Product extends Component
            });
         });
     };
-    // for edit and delete data
+    // for delete data
 
     onchange = (e) => 
     {
@@ -88,6 +88,13 @@ class Product extends Component
         formData.append('prodImg', this.state.prodImg);
 
         axios.post('http://localhost:3001/Addprod/', formData)
+        .then((respon) => {
+            // $(document).ready(() => {
+            //     $('#fullname').val(this.state.fullname);
+            //     $('#address').val(this.state.address);
+            //     $('#phone').val(this.state.phone);
+            // })
+        })
         window.location.reload();
     }
     // buat kirim ke backend

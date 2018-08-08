@@ -21,7 +21,7 @@ class Checkout extends Component
                         <div className="col-md-12">
                             <div className="panel panel-default">
                                 <div className="panel-heading">
-                                    <h3><strong>Order Information</strong></h3>
+                                    <h3><strong>Order Summary</strong></h3>
                                 </div>
                                 <div className="panel-body">
                                     <div className="table-responsive">
@@ -56,17 +56,6 @@ class Checkout extends Component
                                             <tfoot>
                                                 <tr>
                                                     <td><b>Shipped to</b></td>
-                                                    <td>
-                                                        <label className="checkbox-inline">
-                                                            <input type="checkbox" name="" id="" checked disabled/> Default Address
-                                                        </label>
-                                                    </td>
-                                                    <td></td>
-                                                    <td></td>
-                                                    <td></td>
-                                                </tr>
-                                                <tr>
-                                                    <td></td>
                                                     <td><input type="text" className="form-control text-left" id="" value="" placeholder="Full Name" disabled/></td>
                                                     <td><input type="text" className="form-control text-left" id="" value="" placeholder="Address" disabled/></td>
                                                     <td><input type="number" className="form-control text-left" id="" value="" placeholder="Phone Number" disabled/></td>
@@ -76,11 +65,7 @@ class Checkout extends Component
                                                     <td><b>Delivery Method</b></td>
                                                     <td></td>
                                                     <td className="text-right">
-                                                        <select name="" id="" disabled>
-                                                            <option value="">JNE</option>
-                                                            <option value="">Go-Send</option>
-                                                            <option value="">TIKI</option>
-                                                        </select>
+                                                        JNE
                                                     </td>
                                                     <td className="text-right"><b>200000</b></td>
                                                 </tr>
@@ -89,11 +74,7 @@ class Checkout extends Component
                                                     <td></td>
                                                     <td></td>
                                                     <td className="text-right">
-                                                        <select name="" id="" disabled>
-                                                            <option value="">Internet Banking</option>
-                                                            <option value="">Go-Pay</option>
-                                                            <option value="">ATM</option>
-                                                        </select>
+                                                        BNI
                                                     </td>
                                                 </tr>
                                                 <tr>
