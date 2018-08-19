@@ -11,7 +11,8 @@ import Product from './components/Product';
 import Productedit from './components/Productedit';
 import Logout from './components/Logout';
 
-class App extends Component {
+class App extends Component
+{
   render()
   {
     return (

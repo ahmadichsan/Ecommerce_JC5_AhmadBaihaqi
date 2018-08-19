@@ -18,7 +18,7 @@ class Userprofile extends Component
         address: ''
     }
 
-    componentDidMount = () =>
+    componentWillMount = () =>
     {
         // console.log(cookies.get('sessionID'))
         axios.post('http://localhost:3001/Userprofile', {

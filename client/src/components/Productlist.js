@@ -9,8 +9,8 @@ class Productlist extends Component
         prodlist: [],
         catlist: []
     }
-    
-    componentDidMount = () =>
+
+    componentWillMount = () =>
     {
         axios.get('http://localhost:3001/Productlist')
         .then((response) => 

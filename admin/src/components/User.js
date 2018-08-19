@@ -2,18 +2,52 @@ import React, { Component } from 'react';
 import Navbar from './Navbar';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
+import axios from 'axios';
 
 const cookies = new Cookies();
 
 class Userdata extends Component
 {
+    state =
+    {
+        userList: []
+    }
+    componentWillMount = () =>
+    {
+        axios.get('http://localhost:3001/userList')
+        .then((response) =>
+        {
+            var result = response.data;
+            this.setState({
+                userList: result
+            })
+            console.log(result)
+        })
+    }
+    // take user list
+
     render()
     {
-        if (cookies.get('adminID') === undefined)
-        {
-            return <Redirect to='/'/>
-        }
+        if (cookies.get('adminID') === undefined) return <Redirect to='/'/>
         // to check if the admin already login or not
+
+        const userList = this.state.userList.map((item, index) => 
+        {
+            var username = item.username;
+            var fullname = item.fullname;
+            var phone = item.phone;
+            var email = item.email;
+            var createddate = item.CreatedDate;
+
+            return <tr key={index}>
+                    <td>{username}</td>
+                    <td className="text-center">{fullname}</td>
+                    <td className="text-center">{email}</td>
+                    <td className="text-center">{phone}</td>
+                    <td className="text-center">{createddate}</td>
+                    <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
+                </tr>
+        })
         
         return (
             <div id="backcoloradm">
@@ -65,11 +99,11 @@ class Userdata extends Component
                                                                         </div>
                                                                     </button>
                                                                 </td>
-                                                                <td colspan="2">
-                                                                    <span claassName="">
+                                                                <td colSpan="2">
+                                                                    <span className="">
                                                                         Display&nbsp;
                                                                             <select>
-                                                                                <option value="5" selected>5</option>
+                                                                                <option value="5">5</option>
                                                                                 <option value="15">15</option>
                                                                                 <option value="20">20</option>
                                                                                 <option value="25">25</option>
@@ -77,34 +111,19 @@ class Userdata extends Component
                                                                         of 100 Data
                                                                     </span>
                                                                 </td>
-                                                                <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span> All</button></td>
+                                                                <td></td>
                                                             </tr>
                                                             <tr>
                                                                 <th>Username</th>
+                                                                <th className="text-center">Full Name</th>
+                                                                <th className="text-center">E-mail</th>
+                                                                <th className="text-center">Phone</th>
                                                                 <th className="text-center">Date Joined</th>
-                                                                <th className="text-center">Last Activity</th>
-                                                                <th className="text-center">Delete Data</th>
+                                                                <th className="text-center">Inactivate User</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            <tr>
-                                                                <td>ahmdichsan</td>
-                                                                <td className="text-center">20170902</td>
-                                                                <td className="text-center">20180102</td>
-                                                                <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>faldoilyanda</td>
-                                                                <td className="text-center">20160902</td>
-                                                                <td className="text-center">20180502</td>
-                                                                <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>esaadama</td>
-                                                                <td className="text-center">20160902</td>
-                                                                <td className="text-center">20180301</td>
-                                                                <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
-                                                            </tr>
+                                                            {userList}
                                                         </tbody>
                                                     </table>
                                                 </div>

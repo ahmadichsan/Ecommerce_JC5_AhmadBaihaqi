@@ -21,10 +21,11 @@ class Cart extends Component
         devPrice: 0,
         grandTotal: 0,
         paymentMeth: '',
-        redirect: false
+        redirect: false,
+        isCheckout: <br/>
     }
 
-    componentDidMount = () =>
+    componentWillMount = () =>
     {
         var self = this;
         var userID = cookies.get('sessionID');
@@ -35,36 +36,56 @@ class Cart extends Component
             })
             .then((response) => 
             {
+                // console.log(response.data)
+                // console.log(response.data[0].length)
                 // console.log(response.data[0][0].checkoutstat_id)
-                var takeData = response.data[0]; // contain list of item in cart based on userID
-                var subprice = response.data[1]; // contain price per cart ID based on userID
-                var statusout = response.data[0][0].checkoutstat_id
-                
-                if (statusout !== 1)
+                var totalCart = response.data[0].length
+                if (totalCart > 0)
                 {
-                    self.setState({
-                        detailCart: takeData,
-                        subPrice: subprice
+                    var takeData = response.data[0]; // contain list of item in cart based on userID
+                    var subprice = response.data[1]; // contain price per cart ID based on userID
+                    var statusout = response.data[0][0].checkoutstat_id 
+                    // it totalcart > 0 to make sure that var statusout will work if there is at least one item
+                    // in the cart list that ordered by the user
+                    if (statusout === 2)
+                    {
+                        self.setState({
+                            detailCart: takeData,
+                            subPrice: subprice
+                        })
+                    }
+                    // statusout === 2 means that the user still in the cart/cancel checkout and go back to cart
+                    
+                    else if (statusout !== 2)
+                    {
+                        self.setState({
+                            detailCart: []
+                        })
+                    }
+                    // statusout !== 2 (which mean change to 1)
+                    // means that the user move to checkout but the cart item not remove yet from table
+                    // cart item will change status again when user finish the payment
+                    // (click confirm payment and accepted by admin)
+
+                    var Alltotal = 0;
+                    var listPrice = this.state.subPrice
+                    for (var i=0; i<listPrice.length; i++)
+                    {
+                        Alltotal = Alltotal + listPrice[i].tot_sub_price
+                    }
+                    // looping to sum the total price of the all item
+                    this.setState({
+                        grandTotal: Alltotal
                     })
+                    // initial grandtotal before select the delivery method
                 }
-                else if (statusout === 1)
+                else
                 {
+                    // if there is no item in the cart list, then it will stay as an empty state in array type
                     self.setState({
                         detailCart: []
                     })
                 }
-
-                var Alltotal = 0;
-                var listPrice = this.state.subPrice
-                for (var i=0; i<listPrice.length; i++)
-                {
-                    Alltotal = Alltotal + listPrice[i].tot_sub_price
-                }
-                // looping to sum the total price of the all item
-                this.setState({
-                    grandTotal: Alltotal
-                })
-                // initial grandtotal before select the delivery method
             })
             // to take the cart data
 
@@ -77,14 +98,14 @@ class Cart extends Component
             })
             // to take the delivery method list
         }
-        // this if to avoid warning if user not login but try to access cart. Redirect is work, but this if just to remove the warning
-        // if the if remove, component did mount will work but the component not mounted, so it cause warning
+        // this if (cookies) to avoid warning if user not login but try to access cart.
+        // Redirect is work, but this if just to remove the warning
+        // if the if wasn't removed, component did mount will work but the component not mounted, so it cause warning
     }
 
     delete = (val) =>
     {
         var self = this;
-
         axios.post('http://localhost:3001/Delcart', {
             cartID: val
         }).then((response) => 
@@ -157,7 +178,6 @@ class Cart extends Component
 
     check = () =>
     {
-        // $('#fullname').attr("defaultValue", "");
         var self = this;
         if (document.getElementById("checked").checked === true)
         {
@@ -267,42 +287,47 @@ class Cart extends Component
             })
         }
     }
+    // take payment method that will be sent to checkout table
 
     checkout = (val) =>
     {
         var recieveby = val.fullname.value;
         var recieveAdd = val.address.value;
         var recievePhone = val.phone.value;
-        var grandTotal = this.state.grandTotal;
         var idDelivery = val.delivery.value;
         var userID = cookies.get('sessionID');
         var checkoutstats = 1;
         var methPay = this.state.paymentMeth;
         var devPayPrice = this.state.devPrice;
+        var listCart = this.state.detailCart;
+        var listSubtot = this.state.subPrice;
+        var cartItemLength = listCart.length;
         // console.log(val.fullname.value)
         // console.log(val.address.value)
         // console.log(val.phone.value)
         // console.log(this.state.grandTotal)
         // console.log(cookies.get('sessionID'))
         // console.log(checkoutstats)
-
         
-        $(document).ready(() => {
+        $(document).ready(() => 
+        {
             var choosenDelivery = $("#delivery option:selected").text();
             // console.log(choosenDelivery)
-            if (idDelivery !== '0' && recieveby !== '' && recieveAdd !== '' && recievePhone !== '' && methPay !== '') // if user already choose the delivery method, then checkout
+            if (idDelivery !== '0' && cartItemLength > 0 && recieveby !== '' 
+            && recieveAdd !== '' && recievePhone !== '' && methPay !== '') // if user already choose the delivery method, then checkout
             {
                 axios.post('http://localhost:3001/Checkout', 
                 {
                     fullname: recieveby,
                     address: recieveAdd,
                     phone: recievePhone,
-                    totalOrder: grandTotal,
                     userID: userID,
                     deliveryMethod: choosenDelivery, // delivery method
                     statusCheckout: checkoutstats,
                     methPay: methPay,
-                    devPayPrice: devPayPrice
+                    devPayPrice: devPayPrice,
+                    listCart: listCart,
+                    listSubtot: listSubtot
                 })
                 .then((respon) =>
                 {
@@ -312,6 +337,14 @@ class Cart extends Component
                         this.setState({
                             redirect: true
                         })
+                        // console.log('hasilnya')
+                    }
+                    else if (response === -1)
+                    {
+                        this.setState({
+                            isCheckout: `You have an unpaid item. Please finish the payment first.
+                            Otherwise, you have to cancel your order in your payment history, then edit your cart.`
+                        })
                     }
                 })
             }
@@ -320,16 +353,14 @@ class Cart extends Component
 
     render()
     {
-        if (cookies.get('sessionID') === undefined)
-        {
-            return <Redirect to='/Login'/>
-        }
+        if (cookies.get('sessionID') === undefined) return <Redirect to='/Login'/>
         // to check if the users already login or not
 
         if (this.state.redirect) return <Redirect to="/Checkout"/>
         // if checkout success, then redirect to checkout page
 
-        const noItem = this.state.chooseitem.map((item, index) => {
+        const noItem = this.state.chooseitem.map((item, index) => 
+        {
             return <tr key={index}>
                     <td colSpan='5' className="text-center" style={{fontSize:30}}>{item}</td>
                 </tr>
@@ -481,24 +512,30 @@ class Cart extends Component
                                                         </Link>
                                                     </td>
                                                     <td className="text-right">
-                                                        {/* <Link to="/Checkout"> */}
-                                                            <button type="button" className="btn btn-success" onClick={() => this.checkout(this.refs)}>
-                                                                Checkout <span className="fa fa-play"></span>
-                                                            </button>
-                                                        {/* </Link> */}
+                                                        <button type="button" className="btn btn-success" onClick={() => this.checkout(this.refs)}>
+                                                            Checkout <span className="fa fa-play"></span>
+                                                        </button>
                                                     </td>
                                                     <td></td>
                                                 </tr>
+                                                <tr>
+                                                    <td colSpan={5}>
+                                                        {this.state.isCheckout}
+                                                    </td>
+                                                </tr>
                                             </tfoot>
                                         </table>
-                                        </form>
-                                    </div>
+                                        <Link to="/Paymenthis">
+                                            <button className="btn btn-primary"><span className="fa fa-arrow-left">&nbsp;&nbsp;</span>to Payment History</button>    
+                                        </Link>
+                                    </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div> 
-            </div>
+                </div>
+            </div> 
+        </div>
         );
     }
 }

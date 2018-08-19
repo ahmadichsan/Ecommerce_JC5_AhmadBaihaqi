@@ -54,7 +54,7 @@ class Navbar extends Component
                                             <Link to="/User">List of User</Link>
                                         </li>
                                         <li>
-                                            <Link to="/Invoice">User's Invoice</Link>
+                                            <Link to="/Invoice">User's Payment</Link>
                                         </li>
                                     </ul>
                                 </li>

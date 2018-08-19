@@ -30,7 +30,6 @@ const db = mysql.createConnection({
 });
 db.connect();
 
-
 // ================================================== ADMIN SECTION ==================================================
 
 app.get('/', (req, res) => {
@@ -74,6 +73,19 @@ app.post('/admlogin', (req, res) => {
 })
 // Admin Login
 // NOTE: Admin login setup is done
+
+// ========================= ADMIN - User List =========================
+
+app.get('/userList', (req, res) =>
+{  
+  var pullData = 'SELECT username, email, fullname, phone, CreatedDate FROM userprofile'
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else res.send(result);
+  });
+})
+// User List for Admin page
 
 // ========================= ADMIN - Product =========================
 
@@ -294,18 +306,22 @@ app.post('/Delproduct', (req, res) =>
   });
   // Notes: we have to update the total product first, then deleted the data
 })
-// Admin Del Product
-// NOTE: Product set up, done
+// Admin Del Product - also delete from cart
+// NOTE: Product set up, not finish
 
 // ========================= ADMIN - Category =========================
 
 app.get('/Category', (req, res) =>
 {  
   var pullData = 'SELECT * FROM category'
-  db.query(pullData, (err, result) => { 
-    if(err) {
+  db.query(pullData, (err, result) =>
+  { 
+    if(err) 
+    {
       throw err
-    } else {
+    } 
+    else 
+    {
       res.send(result);
     };
   });
@@ -509,8 +525,8 @@ app.get('/Productdetail/:id', (req, res) =>
 })
 // User Product Detail
 
-app.post('/Userprofile', (req, res) => {
-  
+app.post('/Userprofile', (req, res) => 
+{
   var userID = req.body.userID
 
   var pullData = `SELECT * FROM userprofile WHERE id="${userID}"`
@@ -524,13 +540,14 @@ app.post('/Userprofile', (req, res) => {
 })
 // to get the user data in userprofile
 
-app.post('/Order', (req, res) => {
-  
+app.post('/Order', (req, res) => 
+{
   var userID = req.body.UserID;
   var Qty = req.body.prodQty;
   var prodID = req.body.prodID;
   var prodName = req.body.prodName;
   var prodPrice = req.body.prodPrice;
+  var checkoutstat_id = 2;
 
   // console.log(userID);
   // console.log(Qty);
@@ -538,16 +555,45 @@ app.post('/Order', (req, res) => {
   // console.log(prodName);
   // console.log(prodPrice);
 
-    var storeData = `INSERT INTO cart SET user_id="${userID}", prod_id="${prodID}", qty="${Qty}", prodName="${prodName}", prodPrice="${prodPrice}"`
-    db.query(storeData, (err, result) => { 
-      if(err) {
-        throw err
-      } else {
-        var status = '1';
-        res.send(status);
-        // console.log('cart success')
-      };
-    });
+  var checkCart = `SELECT * FROM cart WHERE user_id="${userID}" AND
+  prod_id="${prodID}" AND checkoutstat_id="${checkoutstat_id}"`
+  db.query(checkCart, (err, result) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log(result.length)
+      if (result.length > 0)
+      {
+        // if user already add the same item, the action is updating the qty
+        var updateitem = `UPDATE cart SET qty="${Qty}" WHERE prod_id="${prodID}"`
+        db.query(updateitem, (err, result) => 
+        { 
+          if(err) throw err;
+          else 
+          {
+            var status = '1';
+            res.send(status);
+          };
+        });
+      }
+      else
+      {
+        // if this is a new item, then, it will insert new data
+        var storeData = `INSERT INTO cart SET user_id="${userID}", checkoutstat_id="${checkoutstat_id}",
+        prod_id="${prodID}", qty="${Qty}", prodName="${prodName}", prodPrice="${prodPrice}"`
+        db.query(storeData, (err, result) => 
+        { 
+          if(err) throw err;
+          else 
+          {
+            var status = '1';
+            res.send(status);
+          };
+        });
+      }
+    }
+  })
 })
 // Add to cart
 
@@ -569,8 +615,8 @@ app.post('/Delcart', (req, res) =>
 app.post('/Cart', (req, res) =>
 {
   var userID = req.body.UserID;
-    var pullData = `SELECT * FROM cart WHERE user_id="${userID}";`
-    pullData += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
+    var pullData = `SELECT * FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2";`
+    pullData += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2"`
     db.query(pullData, (err, results) => { 
       if(err) {
         throw err
@@ -580,7 +626,7 @@ app.post('/Cart', (req, res) =>
     });
 })
 // Display cart list - this works, but if admin change the price, it will not update automatically
-// because i take the value of the price, not the id of the product then take the price
+// because i take the value of   the price, not the id of the product then take the price
 // solutin: function when admin edit the product data, its also change the table cart (prodName and prodPrice coulumn)
 // see app.post('/Editproduct')
 
@@ -592,15 +638,16 @@ app.post('/updateCart', (req, res) =>
   // console.log(NewQty)
   // console.log(cartID)
   
-  var updateCart = `UPDATE cart SET qty="${NewQty}" WHERE id="${cartID}"`
+  var updateCart = `UPDATE cart SET qty="${NewQty}" WHERE id="${cartID}" AND checkoutstat_id="2"`
   // to update cart qty
   db.query(updateCart, (err, results) => 
   { 
     if(err) throw err;
     else
     {
-      var retake = `SELECT * FROM cart WHERE user_id="${userID}";` // retake the cart list
-      retake += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"` // count the subPrice
+      var retake = `SELECT * FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2";` // retake the cart list
+      retake += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2"`
+      // count the subPrice
       db.query(retake, (err, results) => { 
         if(err) {
           throw err
@@ -643,58 +690,193 @@ app.post('/Defaultaddress', (req, res) =>
 
 app.post('/Checkout', (req, res) =>
 {
-  var fullname = req.body.fullname;
-  var address = req.body.address;
-  var phone = req.body.phone;
-  var totalOrder = req.body.totalOrder;
-  var userID = req.body.userID;
-  var deliveryChoosen = req.body.deliveryMethod;
+  var userID = req.body.userID; //user id
+  var fullname = req.body.fullname; //recipient fullname
+  var address = req.body.address; //recipient address
+  var phone = req.body.phone; //recipient phone
+  var deliveryChoosen = req.body.deliveryMethod; //selected delivery method
+  var devPayPrice = parseInt(req.body.devPayPrice); //selected delivery method cost
+  var methPay = req.body.methPay; //selected payment method
+  var listCart = req.body.listCart; //cart list
+  var listSubtot = req.body.listSubtot; //subtot per item of cart list
+  
   var statuscheckout = req.body.statusCheckout;
-  var methPay = req.body.methPay
-  var devPayPrice = req.body.devPayPrice
+  //status checkout, to update the cart table, so the cart looks like empty but actually the system just change the status
+  // furthermore,
+  //if the user suddenly cancel the order at checkout, then the status in cart item will channge
+  //so the cart item will appear again in cart page.
 
-  console.log(fullname);
-  console.log(address);
-  console.log(phone);
-  console.log(totalOrder);
-  console.log(userID);
-  console.log(deliveryChoosen);
-  console.log(statuscheckout);
-  console.log(methPay);
-  console.log(devPayPrice);
+  // console.log(userID);
+  // console.log(fullname);
+  // console.log(address);
+  // console.log(phone);
+  // console.log(deliveryChoosen);
+  // console.log(statuscheckout);
+  // console.log(methPay);
+  // console.log(devPayPrice);
+  // console.log(listCart);
+  // console.log(listSubtot);
 
+  DoCheckout = (JD) =>
+  {
+    // console.log(JD)
+    
+    if (JD === 0)
+    {
+      if (statuscheckout === 1)
+      {
+        var updateCart = `UPDATE cart SET checkoutstat_id="${statuscheckout}" WHERE user_id="${userID}"`;
+        db.query(updateCart, (err, results) => {if(err) throw err});
+      }
+      // update the itemstatus of selected product in cart table
+      // well, statuscheckout value will always be 1. See in the client side
 
+      var takeorderID = 'SELECT orderID FROM checkout'
+      db.query(takeorderID, (err, results) =>
+      {
+        if (err) throw err
+        else
+        {
+          var length = results.length;
+          // console.log(length)
+          // console.log(results)
+          
+          var lastOrderID = 0;
+          (length === 0) ? lastOrderID = 0 : lastOrderID = parseInt(results[length-1].orderID);
+          var orderID = lastOrderID + 1;
+          var orders = '';
+          
+          if (orderID < 10)  orders = orders + '0000' + orderID
+          else if (orderID >= 10 && orderID < 100) orders = orders + '000' + orderID
+          else if (orderID >= 100 && orderID < 1000) orders = orders + '00' + orderID
+          else if (orderID >= 1000 && orderID < 10000) orders = orders + '0' + orderID
+          else orders = orders + orderID
+          // generate order ID
+          // console.log(orders)
 
-  // if (statuscheckout === 1)
-  // {
-    // console.log('leaving cart')
-    // var updateCart = `UPDATE cart SET checkoutstat_id="${statuscheckout}" WHERE user_id="${userID}"`;
-    // db.query(updateCart, (err, results) =>
-    // { 
-    //   if(err)
-    //   {
-    //     throw err
-    //   } else 
-    //   {
-        // res.send(results);
-  //     };
-  //   });
+          for (var i=0; i<listCart.length; i++)
+          {
+            // loop for the item list
+            for (var j=i; j<listSubtot.length; j++)
+            {
+              // loop for the subtotal per item
+              var itemstatus_id = 1; // 1 means unpaid
+              var insertCheckout = `INSERT INTO checkout SET user_id=?, cart_id=?, orderID=?,
+              prod_name=?, prod_price=?, quantity=?, subtotal=?,
+              ship_name=?, ship_add=?, ship_phone=?, bank=?,
+              dev_meth=?, dev_price=?, itemstatus_id=?`;
+              db.query(insertCheckout,
+              [userID, listCart[i].id, orders, listCart[i].prodName, listCart[i].prodPrice,
+              listCart[i].qty, listSubtot[j].tot_sub_price, fullname, address, phone, methPay,
+              deliveryChoosen, devPayPrice, itemstatus_id], // value
+              (err, results) =>
+              {
+                if (err) throw err
+              })
+              break;
+              // this break is to make sure that the second loop is just for
+              // adding one data that the item list and the subtotal match
+            }
+            if (i === listCart.length - 1) res.send('1')
+          }
+        }
+      })
+    }
+    else
+    {
+      res.send('-1')
+    }
+  }
 
-  // }
-
-
-
-  // var pullData = `SELECT * FROM cart WHERE user_id="${userID}";`
-  // pullData += `SELECT id, prodPrice*qty AS "tot_sub_price" FROM cart WHERE user_id="${userID}"`
-  // db.query(pullData, (err, results) => { 
-  //   if(err) {
-  //     throw err
-  //   } else {
-  //     res.send(results);
-  //   };
-  // });
+  var checkCheckout = `SELECT user_id, itemstatus_id FROM checkout WHERE user_id="${userID}" AND itemstatus_id="1"`
+  db.query(checkCheckout, (err, result) =>
+  {
+    if (err) throw err;
+    else
+    {
+      var JD = result.length
+      DoCheckout(JD)
+    }
+  })
+  // to check first, if the user have unpaid item, they should finish it first or cancel the current order then edit their cart
+  // otherwise, they can not checkout for the second time
 })
-// for Checkout
+// for Checkout from cart page also insert orderID
+// move data from cart to checkout table
+
+app.post('/CheckoutComp', (req, res) =>
+{
+  var userID = req.body.userID;
+  var itemstatus_id = 1;
+
+  var takeData = `SELECT * FROM checkout WHERE user_id=? AND itemstatus_id=?`;
+  db.query(takeData, [userID, itemstatus_id], (err, results) =>
+  {
+    if (err) throw err;
+    else res.send(results);
+  })
+})
+// pull checkout item from current user ID
+
+app.post('/cancelOrder', (req, res) =>
+{
+  var userID = req.body.userID;
+
+  var deleteCart = `DELETE FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2"`
+  db.query(deleteCart, (err, result) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log('berhasil delete remain cart')
+      var updatemyCart = `UPDATE cart SET checkoutstat_id="2" WHERE user_id="${userID}" AND checkoutstat_id="1"`
+      db.query(updatemyCart, (err, result) =>
+      {
+        if (err) throw err;
+        else
+        {
+          var deleteCheckout = `DELETE FROM checkout WHERE user_id="${userID}" AND itemstatus_id="1"`
+          db.query(deleteCheckout, (err, results) =>
+          {
+            if (err) throw err;
+            else res.send('1')
+          })
+        }
+      })
+    }
+  })  
+})
+// delete remain cart (if user already add new item before cancel the order)
+// update status in cart
+// delete the item in checkout table
+
+app.post('/confirmPayment', (req, res) =>
+{
+  var userID = req.body.userID;
+
+  var deleteCart = `UPDATE checkout SET itemstatus_id="5" WHERE user_id="${userID}" AND itemstatus_id="1"`
+  db.query(deleteCart, (err, result) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log('berhasil delete remain cart')
+      var updatemyCart = `UPDATE cart SET checkoutstat_id="5" WHERE user_id="${userID}" AND checkoutstat_id="1"`
+      db.query(updatemyCart, (err, result) =>
+      {
+        if (err) throw err;
+        else
+        {
+          res.send('1')
+        }
+      })
+    }
+  })  
+})
+// confirm payment just change the status of the item in cart and checkout table
+// after confirm by admin, the item will either move to invoice or back to checkout if failed (to be confirm)
+
+
 
 
 

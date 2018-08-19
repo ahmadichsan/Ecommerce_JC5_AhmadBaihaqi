@@ -10,10 +10,11 @@ class Productdetail extends Component
         detprod: [],
         categoryname: '',
         nums: 1,
-        redirect: false
+        redirectCart: false,
+        redirectLogin: false
     }
 
-    componentDidMount = () =>
+    componentWillMount = () =>
     {
         var id_sblm = this.props.location.state.prodid;
         axios.get('http://localhost:3001/Productdetail/' + id_sblm)
@@ -35,6 +36,7 @@ class Productdetail extends Component
             nums: e.target.value
         })
     }
+    // to make the value of qty of the selected product editable
 
     increment = () => 
     {  
@@ -68,29 +70,46 @@ class Productdetail extends Component
         var userID = cookies.get('sessionID')
         // console.log('jumlah barang: ' + ordered.qty.value);
         // console.log('id produk: ' + ordered.prodID.value);
-        axios.post('http://localhost:3001/Order', {
-            UserID: userID,
-            prodQty: ordered.qty.value,
-            prodID: ordered.prodID.value,
-            prodName: ordered.prodName.value,
-            prodPrice: ordered.prodPrice.value
-        })
-        .then((response) => {
-            console.log(response.data)
-            var storestat = response.data;
-            if (storestat === 1)
+
+        if (userID !== undefined)
+        {
+            axios.post('http://localhost:3001/Order', 
             {
-                this.setState({
-                    redirect: true
-                })
-            }
-        })
+                UserID: userID,
+                prodQty: ordered.qty.value,
+                prodID: ordered.prodID.value,
+                prodName: ordered.prodName.value,
+                prodPrice: ordered.prodPrice.value
+            })
+            .then((response) => 
+            {
+                // console.log(response.data)
+                var storestat = response.data;
+                if (storestat === 1)
+                {
+                    this.setState({
+                        redirectCart: true
+                    })
+                }
+                // to redirect to cart
+            })
+        }
+        else
+        {
+            this.setState({
+                redirectLogin: true
+            })
+        }
     }
     // Function to send the order to cart table
 
     render()
     {
-        if (this.state.redirect) return <Redirect to='/Cart'/>
+        if (this.state.redirectCart) return <Redirect to='/Cart'/>
+        // if user success add to cart, then move to cart page
+        if (this.state.redirectLogin) return <Redirect to='/Login'/>
+        // if user not login yet, when user hit add to cart, they will
+        // redirect to login
 
         const detproduk = this.state.detprod.map((item, index) =>
         {

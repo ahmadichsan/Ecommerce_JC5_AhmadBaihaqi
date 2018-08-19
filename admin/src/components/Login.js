@@ -32,7 +32,9 @@ class Login extends Component
 
     render()
     {
-        if (this.state.redirect) return <Redirect to='/Home'/>
+        if (this.state.redirect) return <Redirect to='/Home'/> // if admin already logged in, go to Home component
+        if (cookies.get('adminID') !== undefined) return <Redirect to='/Home'/>
+        // if admin still have session, then move to Home
 
         return (
             <div id="backcolor">

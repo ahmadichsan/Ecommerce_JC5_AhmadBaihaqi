@@ -21,11 +21,12 @@ class Category extends Component
         var self = this;
         $(document).ready(() => {
             // code to read selected table row cell data (values).
-            $("#myTable").on('click','.btnEdit', function() {
-                 // get the current row
-                 var currentRow = $(this).closest("tr"); 
-                 var col1 = currentRow.attr('nilai'); // get current row 1st table cell TD value
-                 var col2 = currentRow.find("td:eq(1)").text(); // get current row 2nd table cell TD value
+            $("#myTable").on('click','.btnEdit', function()
+            {
+                // get the current row
+                var currentRow = $(this).closest("tr"); 
+                var col1 = currentRow.attr('nilai'); // get current row 1st table cell TD value
+                var col2 = currentRow.find("td:eq(1)").text(); // get current row 2nd table cell TD value
                  
                 //  console.log(col1);
                 //  console.log(col2);
@@ -90,10 +91,7 @@ class Category extends Component
 
     render()
     {
-        if (cookies.get('adminID') === undefined)
-        {
-            return <Redirect to='/'/>
-        }
+        if (cookies.get('adminID') === undefined) return <Redirect to='/'/>
         // to check if the admin already login or not
         
         const daftarkategori = this.state.catlist.map((item, index) =>
