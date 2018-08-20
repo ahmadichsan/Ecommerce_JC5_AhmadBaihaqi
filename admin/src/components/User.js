@@ -12,6 +12,7 @@ class Userdata extends Component
     {
         userList: []
     }
+
     componentWillMount = () =>
     {
         axios.get('http://localhost:3001/userList')

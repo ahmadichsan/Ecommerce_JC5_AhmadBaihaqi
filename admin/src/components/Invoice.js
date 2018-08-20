@@ -14,6 +14,17 @@ const cookies = new Cookies();
 
 class Invoice extends Component
 {
+    state =
+    {
+        controller: ''
+    }
+
+    change = (val) =>
+    {
+        console.log(val)
+        if (val === '1') this.setState({controller: '2'})
+    }
+
     render()
     {
         if (cookies.get('adminID') === undefined) return <Redirect to='/'/>
@@ -40,10 +51,10 @@ class Invoice extends Component
                             </ul>
                             <div id="myTabContent" className="tab-content">
                                 <div className="tab-pane fade active in" id="NP">
-                                    <Unpaid/>
+                                    <Unpaid control={this.state.controller} theChange={this.change}/>
                                 </div>
                                 <div className="tab-pane fade" id="Paid">
-                                    <Paid/>
+                                    <Paid control={this.state.controller} theChange={this.change}/>
                                 </div>
                                 <div className="tab-pane fade" id="PBS">
                                     <PBS/>

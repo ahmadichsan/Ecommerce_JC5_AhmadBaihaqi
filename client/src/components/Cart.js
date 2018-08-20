@@ -31,6 +31,7 @@ class Cart extends Component
         var userID = cookies.get('sessionID');
         if (cookies.get('sessionID') !== undefined)
         {
+            console.log(userID)
             axios.post('http://localhost:3001/Cart', {
                 UserID: userID
             })
@@ -106,14 +107,16 @@ class Cart extends Component
     delete = (val) =>
     {
         var self = this;
-        axios.post('http://localhost:3001/Delcart', {
+        axios.post('http://localhost:3001/Delcart', 
+        {
             cartID: val
         }).then((response) => 
         {
             if (response)
             {
                 var userID = cookies.get('sessionID');
-                axios.post('http://localhost:3001/Cart', {
+                axios.post('http://localhost:3001/Cart', 
+                {
                     UserID: userID
                 })
                 .then((response) => 
@@ -337,7 +340,7 @@ class Cart extends Component
                         this.setState({
                             redirect: true
                         })
-                        // console.log('hasilnya')
+                        console.log('hasilnya')
                     }
                     else if (response === -1)
                     {

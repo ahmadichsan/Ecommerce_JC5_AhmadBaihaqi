@@ -32,13 +32,14 @@ db.connect();
 
 // ================================================== ADMIN SECTION ==================================================
 
-app.get('/', (req, res) => {
+app.get('/', (req, res) => 
+{
   res.send('Halaman Server')
 })
 // Starting point
 
-app.post('/admlogin', (req, res) => {
-
+app.post('/admlogin', (req, res) => 
+{
   var Username = req.body.username;
   var Password = req.body.password;
   
@@ -86,6 +87,135 @@ app.get('/userList', (req, res) =>
   });
 })
 // User List for Admin page
+
+// ========================= ADMIN - User's payment =========================
+
+app.get('/unpaidList', (req, res) =>
+{  
+  var pullData = `SELECT DISTINCT orderID, username, orderDate,
+  sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
+  WHERE itemstatus_id="5" GROUP BY orderID`
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+      // console.log(result);
+      // console.log('asd')
+    }
+  });
+})
+// User Unpaid List for Admin page
+
+app.post('/paymentSuccess', (req, res) =>
+{
+  var orderID = req.body.orderID
+  // console.log(orderID)
+
+  var updateCheckout = `UPDATE checkout SET itemstatus_id="3" WHERE orderID="${orderID}";`
+  updateCheckout += `SELECT * FROM checkout WHERE orderID="${orderID}"`
+  db.query(updateCheckout, (err, result) => 
+  {
+    if (err) throw err
+    else
+    {
+      // console.log(result[1])
+      var dataforINV = result[1]
+      // take data for selected orderID
+      // console.log(dataforINV[0])   
+      
+      var takeorderID = 'SELECT INV FROM inv_detail'
+      db.query(takeorderID, (err, results) =>
+      {
+        if (err) throw err
+        else
+        {
+          var length = results.length;
+          // console.log(length)
+          // console.log(results)
+          
+          var lastINV = 0;
+          (length === 0) ? lastINV = 0 : lastINV = parseInt(results[length-1].INV);
+          var INV = lastINV + 1;
+          var INVcode = '';
+          
+          if (INV < 10)  INVcode = INVcode + '0000' + INV
+          else if (INV >= 10 && INV < 100) INVcode = INVcode + '000' + INV
+          else if (INV >= 100 && INV < 1000) INVcode = INVcode + '00' + INV
+          else if (INV >= 1000 && INV < 10000) INVcode = INVcode + '0' + INV
+          else INVcode = INVcode + INV
+          // generate Invoice Code
+          // console.log(INVcode)
+
+          for (var i=0; i<dataforINV.length; i++)
+          {
+            // loop for the item list
+            var itemstatus_id = 3; // 3 means paid
+            var insertINV_detail = `INSERT INTO inv_detail SET user_id=?, orderID=?, INV=?,
+            prod_name=?, prod_price=?, quantity=?, subtotal=?,
+            ship_name=?, ship_add=?, ship_phone=?, bank=?,
+            dev_meth=?, dev_price=?, itemstatus_id=?, orderDate=?`;
+            db.query(insertINV_detail,
+            [dataforINV[i].user_id, dataforINV[i].orderID, INVcode,
+            dataforINV[i].prod_name, dataforINV[i].prod_price,
+            dataforINV[i].quantity, dataforINV[i].subtotal,
+            dataforINV[i].ship_name, dataforINV[i].ship_add,
+            dataforINV[i].ship_phone, dataforINV[i].bank,
+            dataforINV[i].dev_meth, dataforINV[i].dev_price,
+            itemstatus_id, dataforINV[i].orderDate], // value
+            (err, results) =>
+            {
+              if (err) throw err
+            })
+            // if (i === dataforINV.length - 1) res.send('1')
+          }
+
+          var pullData = `SELECT DISTINCT INV, user_id, orderDate,
+          sum(subtotal)+dev_price AS grandtotal FROM inv_detail 
+          WHERE itemstatus_id="3" AND INV="${INVcode}"`
+          // GROUP BY orderID
+          db.query(pullData, (err, result) => 
+          { 
+            if(err) throw err
+            else 
+            {
+              // console.log(result[0].orderDate)
+              var userID = result[0].user_id;
+              var INVCode = result[0].INV;
+              var GrandTotal = result[0].grandtotal;
+              var orderDate = result[0].orderDate;
+              var insertINV_header = `INSERT INTO inv_header SET user_id=?,
+              INV=?, grandtotal=?, orderDate=?`
+              db.query(insertINV_header, [userID, INVCode, GrandTotal, orderDate], (err, result) => 
+              {
+                if (err) throw err;
+                else res.send('1')
+              })
+            }
+          });
+        }
+      })
+    }
+  })
+})
+// payment confirmed by admin - success
+
+app.get('/paidList', (req, res) =>
+{  
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// User paid List for Admin page
 
 // ========================= ADMIN - Product =========================
 
@@ -741,7 +871,7 @@ app.post('/Checkout', (req, res) =>
           // console.log(length)
           // console.log(results)
           
-          var lastOrderID = 0;
+          var lastINV = 0;
           (length === 0) ? lastOrderID = 0 : lastOrderID = parseInt(results[length-1].orderID);
           var orderID = lastOrderID + 1;
           var orders = '';
@@ -808,12 +938,17 @@ app.post('/CheckoutComp', (req, res) =>
 {
   var userID = req.body.userID;
   var itemstatus_id = 1;
+  // console.log(userID)
 
   var takeData = `SELECT * FROM checkout WHERE user_id=? AND itemstatus_id=?`;
   db.query(takeData, [userID, itemstatus_id], (err, results) =>
   {
     if (err) throw err;
-    else res.send(results);
+    else
+    {
+      // console.log(results)
+      res.send(results);
+    }
   })
 })
 // pull checkout item from current user ID

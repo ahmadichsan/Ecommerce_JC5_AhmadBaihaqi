@@ -4,7 +4,6 @@ import Cookies from 'universal-cookie';
 import axios from 'axios';
 
 const cookies = new Cookies();
-var userID = cookies.get('sessionID')
 
 class Checkout extends Component
 {
@@ -26,8 +25,11 @@ class Checkout extends Component
 
     componentWillMount = () =>
     {
+        var userID = cookies.get('sessionID');
+
         if (userID !== undefined)
         {
+            console.log(userID)
             axios.post('http://localhost:3001/CheckoutComp',
             {
                 userID: userID
@@ -63,7 +65,8 @@ class Checkout extends Component
 
     cancelOrder = () =>
     {
-        // console.log(checkoutList)
+        var userID = cookies.get('sessionID');
+
         axios.post('http://localhost:3001/cancelOrder',
         {
             userID: userID
@@ -85,6 +88,8 @@ class Checkout extends Component
 
     confirmPayment = () =>
     {
+        var userID = cookies.get('sessionID');
+        
         axios.post('http://localhost:3001/confirmPayment',
         {
             userID: userID
@@ -105,7 +110,7 @@ class Checkout extends Component
 
     render()
     {
-        if (userID === undefined) return <Redirect to='/Login'/>
+        if (cookies.get('sessionID') === undefined) return <Redirect to='/Login'/>
         // to check if the users already login or not
         if (this.state.redirect) return <Redirect to="/Cart"/>
         // if user cancel the order
