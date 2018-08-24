@@ -54,7 +54,7 @@ export default class PF extends Component
             <td style={{width:100}} className="text-center">{orderID}</td>
             <td style={{width:100}} className="text-center">{total}</td>
             <td style={{width:100}} className="text-center">{orderDate}</td>
-            <td style={{width:100}} className="text-center"><Link to="/Invoicedetail">view</Link></td>
+            <td style={{width:100}} className="text-center"><Link to={{pathname: '/AdmPF', state: {orderID: orderID}}}>view</Link></td>
         </tr>
         })
 

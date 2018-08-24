@@ -43,11 +43,12 @@ class Cart extends Component
                 var totalCart = response.data[0].length
                 if (totalCart > 0)
                 {
+                    // if totalcart > 0 to make sure that var statusout will work if there is at least one item
+                    // in the cart list that ordered by the user
                     var takeData = response.data[0]; // contain list of item in cart based on userID
                     var subprice = response.data[1]; // contain price per cart ID based on userID
                     var statusout = response.data[0][0].checkoutstat_id 
-                    // it totalcart > 0 to make sure that var statusout will work if there is at least one item
-                    // in the cart list that ordered by the user
+                    
                     if (statusout === 2)
                     {
                         self.setState({

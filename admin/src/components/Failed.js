@@ -7,7 +7,7 @@ import Navbar from './Navbar';
 
 const cookies = new Cookies();
 
-class BeingProcess extends Component
+class Failed extends Component
 {
     state =
     {
@@ -20,7 +20,7 @@ class BeingProcess extends Component
         grandTotal: '',
         orderDate: '',
         orderID: '',
-        NPView: []
+        listFailed: []
     }
 
     componentWillMount = () =>
@@ -30,7 +30,8 @@ class BeingProcess extends Component
 
         if (userID !== undefined)
         {
-            axios.post('http://localhost:3001/NPView',
+            // console.log(userID)
+            axios.post('http://localhost:3001/AdmFailed',
             {
                 orderID: orderID
             })
@@ -46,7 +47,7 @@ class BeingProcess extends Component
                     for (var i in results) GT = GT + results[i].subtotal
 
                     this.setState({
-                        NPView: results,
+                        listFailed: results,
                         fullname: results[0].ship_name,
                         address: results[0].ship_add,
                         phone: results[0].ship_phone,
@@ -68,7 +69,7 @@ class BeingProcess extends Component
         if (cookies.get('sessionID') === undefined) return <Redirect to='/Login'/>
         // to check if the users already login or not
 
-        const UnpaidList = this.state.NPView.map((item, index) =>
+        const FailedList = this.state.listFailed.map((item, index) =>
         {
             var checkoutID = item.id // idcheckout
             var prodName = item.prod_name;
@@ -85,7 +86,7 @@ class BeingProcess extends Component
                     <td className="text-right"><strong>{subtotal}</strong></td>
                 </tr>
         })
-        // for mapping the Unpaid list
+        // for mapping the BP list
 
         return (
             <div id="backcoloradm">
@@ -94,7 +95,7 @@ class BeingProcess extends Component
                     <div id="page-wrapper" style={{paddingTop:20, paddingBottom:1}}>
                         <div className="panel panel-default">
                             <div className="panel-heading">
-                                <h2><strong>Order Summary - Need Process Item</strong></h2>
+                                <h3><strong>Order Summary - Failed Item</strong></h3>
                             </div>
                             <div className="panel-body">
                                 <div className="table-responsive">
@@ -104,11 +105,11 @@ class BeingProcess extends Component
                                                 <th>Product</th>
                                                 <th className="text-center">Price (IDR)</th>
                                                 <th className="text-center">Quantity</th>
-                                                <th className="text-right">SubTotal</th>
+                                                <th className="text-right">Total</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {UnpaidList}
+                                            {FailedList}
                                         </tbody>
                                         <tfoot>
                                             <tr>
@@ -116,6 +117,7 @@ class BeingProcess extends Component
                                                 <td><input type="text" className="form-control text-left" id="" value={this.state.fullname} placeholder="Full Name" disabled/></td>
                                                 <td><input type="text" className="form-control text-left" id="" value={this.state.address} placeholder="Address" disabled/></td>
                                                 <td><input type="number" className="form-control text-left" id="" value={this.state.phone} placeholder="Phone Number" disabled/></td>
+                                                <td></td>
                                             </tr>
                                             <tr>
                                                 <td><b>Delivery Method</b></td>
@@ -154,19 +156,17 @@ class BeingProcess extends Component
                                             <tr>
                                                 <td></td>
                                                 <td></td>
-                                                <td className="text-right">
-                                                    <h4>Total</h4>
+                                                <td>
+                                                    <h3>Total</h3>
                                                 </td>
                                                 <td className="text-right">
-                                                    <h4>{this.state.grandTotal}</h4>
+                                                    <h3>{this.state.grandTotal}</h3>
                                                 </td>
                                             </tr>
                                             <tr>
                                                 <td>
                                                     <Link to="/Invoice">
-                                                        <button className="btn btn-primary">
-                                                            <span className="fa fa-arrow-left">&nbsp;&nbsp;</span>User's Payment
-                                                        </button>
+                                                        <button className="btn btn-primary"><span className="fa fa-arrow-left">&nbsp;&nbsp;</span>to Payment History</button>    
                                                     </Link>
                                                 </td>
                                                 <td></td>
@@ -181,7 +181,13 @@ class BeingProcess extends Component
                     </div>
                 </div>
             </div>
+
+
+                        
+                            
+
+                        
         );
     }
 }
-export default BeingProcess;
+export default Failed;

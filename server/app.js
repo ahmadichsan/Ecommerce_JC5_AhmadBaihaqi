@@ -275,6 +275,39 @@ app.post('/paymentSuccess', (req, res) =>
 })
 // payment confirmed by admin - success
 
+app.get('/paidList', (req, res) =>
+{  
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="3" GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    // take all data that the payment already confirmed (with status = success/paid payment only)
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// User paid List for Admin page
+
+app.post('/PaidView', (req, res) =>
+{  
+  var INVcode = req.body.codeINV;
+  var pullData = `SELECT * FROM inv_detail JOIN userprofile
+  ON inv_detail.user_id=userprofile.id WHERE inv_detail.INV="${INVcode}"`
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// User Invoice for Admin View
+
 app.post('/paymentFailed', (req, res) => 
 {
   var orderID = req.body.orderID
@@ -304,22 +337,23 @@ app.get('/pfList', (req, res) =>
 })
 // User payment failed List for Admin page
 
-app.get('/paidList', (req, res) =>
-{  
-  var pullData = `SELECT username, INV, grandtotal, orderDate
-  FROM inv_header JOIN userprofile
-  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="3" GROUP BY INV ORDER BY INV`
-  db.query(pullData, (err, result) => 
-  { 
-    // take all data that the payment already confirmed (with status = success/paid payment only)
-    if(err) throw err
-    else 
+app.post('/AdmFailed', (req, res) =>
+{
+  var orderID = req.body.orderID;
+  // console.log(userID)
+
+  var takeData = `SELECT * FROM checkout WHERE orderID=?`;
+  db.query(takeData, [orderID], (err, results) =>
+  {
+    if (err) throw err;
+    else
     {
-      res.send(result);
+      // console.log(results)
+      res.send(results);
     }
-  });
+  })
 })
-// User paid List for Admin page
+// take failed list for admin view
 
 app.post('/pbsList', (req, res) =>
 {
@@ -432,62 +466,64 @@ app.post('/Addprod', (req, res) =>
   var prod_price = req.body.prodPrice;
   var prod_cat = req.body.prodCat;
   var prod_desc = req.body.prodDesc;
-  var prod_img = req.files.prodImg.name;
-  
-  // console.log(prod_name)
-  // console.log('4: ' + prod_price);
-  // console.log('5: ' + prod_cat);
-  // console.log('6: ' + prod_desc);
-  console.log('7: ' + prod_img);
 
-  if(prod_name !== '' && prod_price !== '' && prod_cat !== '' && prod_desc !== '' && prod_img !== '')
+  if(req.files)
   {
-    // If-else condition above to make sure that not null value inserted into table database
-    console.log('3: ' + prod_name);
-    console.log('4: ' + prod_price);
-    console.log('5: ' + prod_cat);
-    console.log('6: ' + prod_desc);
-    console.log('7: ' + prod_img);
-
-    var ImgFile = req.files.prodImg;
-    ImgFile.mv("./images/" + prod_img, (err) =>
+    // to make sure that add new product must include the photo/pic of the product
+    var prod_img = req.files.prodImg.name;
+    if(prod_name !== '' && prod_price !== '' && prod_cat !== '' && prod_desc !== '' && prod_img !== '')
     {
-      // upload image
-      if(err)
+      // If-else condition above to make sure that not null value inserted into table database
+
+      // console.log('1: ' + prod_name)
+      // console.log('2: ' + prod_price);
+      // console.log('3: ' + prod_cat);
+      // console.log('4: ' + prod_desc);
+      // console.log('5: ' + prod_img);
+
+      var ImgFile = req.files.prodImg;
+      ImgFile.mv("./images/" + prod_img, (err) =>
       {
-        console.log('Upload failed');
-      }
-      else 
-      {
-        console.log('Upload succeed');
-        var newData = `INSERT INTO product SET cat_id="${prod_cat}", prod_name="${prod_name}", prod_img='${prod_img}', prod_price='${prod_price}', prod_desc='${prod_desc}' `;
-        // query above to insert new product
-        db.query(newData, (err, result) => { 
-          if(err) throw err;
-          else
-          {
-            var takeProdCatAmount = `SELECT totalprod FROM category WHERE id="${prod_cat}"`
-            // query above to take the inital amount (before new product added) of product based on categoryID
-              db.query(takeProdCatAmount, (err, result) => {
-              if (err) {
-                throw err
-              }
-              else
+        // upload image
+        if(err) throw err;
+        else 
+        {
+          // console.log('Upload succeed');
+          var newData = `INSERT INTO product SET cat_id="${prod_cat}", prod_name="${prod_name}", prod_img='${prod_img}', prod_price='${prod_price}', prod_desc='${prod_desc}' `;
+          // query above to insert new product
+          db.query(newData, (err, result) => 
+          { 
+            if(err) throw err;
+            else
+            {
+              var takeProdCatAmount = `SELECT totalprod FROM category WHERE id="${prod_cat}"`
+              // query above to take the inital amount (before new product added) of product based on categoryID
+              db.query(takeProdCatAmount, (err, result) => 
               {
-                var initialAmount = result[0].totalprod;
-                var newAmount = initialAmount + 1;
-                var addProdAmount = `UPDATE category SET totalprod="${newAmount}" WHERE id="${prod_cat}"`
-                // query above to update the total amount of product based on the category after new product was added
-                db.query(addProdAmount, (err, result) => {
-                  if (err) throw err
-                })
-              }
-            })
-            res.send(result)
-          }
-        });
-      }
-    })
+                if (err) throw err
+                else
+                {
+                  var initialAmount = result[0].totalprod;
+                  var newAmount = initialAmount + 1;
+                  var addProdAmount = `UPDATE category SET totalprod="${newAmount}" WHERE id="${prod_cat}"`
+                  // query above to update the total amount of product based on the category after new product was added
+                  db.query(addProdAmount, (err, result) => 
+                  {
+                    if (err) throw err
+                    else res.send('1')
+                  })
+                }
+              })
+            }
+          });
+        }
+      })
+    }
+  }
+  else
+  {
+    res.send('-1')
+    // console.log('gagal')
   }
 })
 // Admin Add Product - Take value from Client and send it into database
@@ -513,13 +549,10 @@ app.post('/Editproduct', (req, res) =>
     var ImgFile = req.files.prodImg;
     ImgFile.mv("./images/" + prod_img, (err) =>
     {
-      if(err)
-      {
-        console.log('Upload failed');
-      }
+      if(err) throw err
       else
       {        
-        console.log('Upload succeed');
+        // console.log('Upload succeed');
         var editData = `UPDATE product SET prod_name="${prod_name}", prod_img='${prod_img}',
         prod_price='${prod_price}', cat_id='${prod_cat}', prod_desc='${prod_desc}' WHERE id='${prod_id}'`;
         // query above to edit data in product table
@@ -565,7 +598,7 @@ app.post('/Editproduct', (req, res) =>
         })
       }
     });
-    console.log('6: tanpa gambar')
+    // console.log('6: tanpa gambar')
   }
 })
 // Admin Edit Product - Take value from Client and send it into database (update database)
@@ -1219,7 +1252,7 @@ app.post('/Checkout', (req, res) =>
           // console.log(length)
           // console.log(results)
           
-          var lastINV = 0;
+          var lastOrderID = 0;
           (length === 0) ? lastOrderID = 0 : lastOrderID = parseInt(results[length-1].orderID);
           var orderID = lastOrderID + 1;
           var orders = '';

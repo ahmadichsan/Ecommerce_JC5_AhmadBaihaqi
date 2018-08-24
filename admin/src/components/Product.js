@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
-import $ from 'jquery';
 import { Link } from 'react-router-dom';
+import $ from 'jquery';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
 
@@ -14,45 +14,102 @@ class Product extends Component
     {
         prodlist: [],
         catlist: [],
+        prodID: 0,
         prodName: '',
         prodPrice: '',
-        prodCat: '',
+        prodCat: 0,
         prodDesc: '',
-        prodImg: ''
+        prodImg: '',
+        statusAdd: <br/>
     }
     
     componentWillMount = () =>
     {
-        var self = this;
-        $(document).ready(() => {
-            // code to read selected table row cell data (values).
-            $("#myTable").on('click','.btnDel', function() {
-                // get the current row
-                var currentRow = $(this).closest("tr"); 
-                var col1 = currentRow.attr('nilai'); // get current row 1st table cell TD value
-                
-                console.log(col1);
-                axios.post('http://localhost:3001/Delproduct', {
-                    produkID: col1
-                }).then((response) => {
-                    if (response)
-                    {
-                        axios.get('http://localhost:3001/Product')
-                        .then((response) => 
-                        {
-                            // console.log(response.data[1]);
-                            self.setState({
-                                prodlist: response.data[0],
-                                catlist: response.data[1]
-                            })
-                            // console.log(this.state.catlist)
-                        })
-                    }
-                })
-           });
-        });
+        axios.get('http://localhost:3001/Product')
+        .then((response) => 
+        {
+            // console.log(response.data[1]);
+            this.setState({
+                prodlist: response.data[0],
+                catlist: response.data[1]
+            })
+            // console.log(this.state.catlist)
+        })
     };
+    // To send request product and category list to server and display the response
+
+
+    delProd = (val) =>
+    {
+        var prodID = val
+        // console.log(prodID);
+        axios.post('http://localhost:3001/Delproduct', 
+        {
+            produkID: prodID
+        })
+        .then((response) => 
+        {
+            if (response)
+            {
+                axios.get('http://localhost:3001/Product')
+                .then((response) => 
+                {
+                    // console.log(response.data[1]);
+                    this.setState({
+                        prodlist: response.data[0],
+                        catlist: response.data[1]
+                    })
+                    // console.log(this.state.catlist)
+                })
+            }
+        })
+    }
     // for delete data
+
+    editProd = (val) =>
+    {
+        // console.log(val.id)
+        // console.log(val.cat_id)
+        // console.log(val.prod_name)
+        // console.log(val.prod_price)
+        // console.log(val.prod_desc)
+        var idProduct = val.id;
+        var catProduct = val.cat_id;
+        var nameProduct = val.prod_name;
+        var priceProduct = val.prod_price;
+        var descProduct = val.prod_desc
+
+        this.setState({
+            prodID: idProduct,
+            prodName: nameProduct,
+            prodPrice: priceProduct,
+            prodCat: catProduct,
+            prodDesc: descProduct
+        })
+
+        $(document).ready(() => 
+        {
+            $('#idProd').val(this.state.prodID);
+            $('#prodnames').val(this.state.prodName);
+            $('#prodprices').val(this.state.prodPrice);
+            $('#catID').val(this.state.prodCat);
+            $('#proddesc').val(this.state.prodDesc);
+        })
+    }
+
+    changeDesc = (e) =>
+    {
+        this.setState({
+            prodDesc: e.target.value
+        })
+    }
+
+    changeCat = (e) =>
+    {
+        this.setState({
+            prodCat: e.target.value
+        })
+    }
 
     onchange = (e) => 
     {
@@ -69,7 +126,9 @@ class Product extends Component
 
     addprod = (newprod) =>
     {
+        // console.log(newprod.prodnames.value)
         this.setState({
+            prodID: newprod.idProd.value,
             prodName: newprod.prodnames.value,
             prodPrice: newprod.prodprices.value,
             prodCat: newprod.catID.value,
@@ -81,45 +140,99 @@ class Product extends Component
     {
         e.preventDefault();
         let formData = new FormData();
+        formData.append('prodID', this.state.prodID);
         formData.append('prodName', this.state.prodName);
         formData.append('prodPrice', this.state.prodPrice);
         formData.append('prodCat', this.state.prodCat);
         formData.append('prodDesc', this.state.prodDesc);
         formData.append('prodImg', this.state.prodImg);
 
-        axios.post('http://localhost:3001/Addprod/', formData)
-        .then((respon) => {
-            // $(document).ready(() => {
-            //     $('#fullname').val(this.state.fullname);
-            //     $('#address').val(this.state.address);
-            //     $('#phone').val(this.state.phone);
-            // })
-        })
-        window.location.reload();
+        // console.log(typeof(this.state.prodID))
+        var productID = this.state.prodID;
+        if (productID === '0')
+        {
+            axios.post('http://localhost:3001/Addprod/', formData)
+            .then((respon) => 
+            {
+                // console.log(respon.data)
+                if (respon.data === 1)
+                {
+                    // console.log('berhasil')
+                    axios.get('http://localhost:3001/Product')
+                    .then((response) => 
+                    {
+                        // console.log(response.data[1]);
+                        this.setState({
+                            prodlist: response.data[0],
+                            catlist: response.data[1],
+                            prodID: 0,
+                            prodName: '',
+                            prodPrice: '',
+                            prodCat: 0,
+                            prodDesc: ''
+                        })
+                        // console.log(this.state.catlist)
+            
+                        $(document).ready(() => 
+                        {
+                            $('#idProd').val(this.state.prodID);
+                            $('#prodnames').val(this.state.prodName);
+                            $('#prodprices').val(this.state.prodPrice);
+                            $('#catID').val(this.state.prodCat);
+                            $('#proddesc').val(this.state.prodDesc);
+                        })
+                    })   
+                }
+                else if (respon.data === -1)
+                {
+                    console.log('gagal')
+                    this.setState({
+                        statusAdd: 'Failed, please insert the picture of the product'
+                    })
+                }
+            })
+        }
+        else
+        {
+            axios.post('http://localhost:3001/Editproduct/', formData)
+            .then((respon) =>
+            {
+                if (respon.data === 1)
+                {
+                    axios.get('http://localhost:3001/Product')
+                    .then((response) => 
+                    {
+                        // console.log(response.data[1]);
+
+                        this.setState({
+                            prodlist: response.data[0],
+                            catlist: response.data[1],
+                            prodID: 0,
+                            prodName: '',
+                            prodPrice: '',
+                            prodCat: 0,
+                            prodDesc: ''
+                        })
+                        // console.log(this.state.catlist)
+            
+                        $(document).ready(() => 
+                        {
+                            $('#idProd').val(this.state.prodID);
+                            $('#prodnames').val(this.state.prodName);
+                            $('#prodprices').val(this.state.prodPrice);
+                            $('#catID').val(this.state.prodCat);
+                            $('#proddesc').val(this.state.prodDesc);
+                        })
+                    })
+                }
+            })
+        }
     }
     // buat kirim ke backend
 
-    componentDidMount = () =>
-    {
-        axios.get('http://localhost:3001/Product')
-        .then((response) => 
-        {
-            // console.log(response.data[1]);
-            this.setState({
-                prodlist: response.data[0],
-                catlist: response.data[1]
-            })
-            // console.log(this.state.catlist)
-        })
-    }
-    // To send request product and category list to server and display the response
-
     render()
     {
-        if (cookies.get('adminID') === undefined)
-        {
-            return <Redirect to='/'/>
-        }
+        if (cookies.get('adminID') === undefined) return <Redirect to='/'/>
         // to check if the admin already login or not
         
         const daftarproduk = this.state.prodlist.map((item, index) =>
@@ -161,19 +274,14 @@ class Product extends Component
                     <td style={{width:20}} className="text-center">
                         {proddesc}
                     </td>
-                    <td style={{width:20}} className="text-center"><Link to={
-                        {
-                            pathname: '/Editproduct',
-                            state: 
-                            {
-                                prodid: prodid,
-                                prodname: prodname,
-                                prodcat: prodcat,
-                                prodprice: prodprice,
-                                proddesc: proddesc
-                            }
-                        }}><button className="btn btn-primary btn-md"><span className="fa fa-edit"></span></button></Link></td>
-                    <td style={{width:20}} className="text-center"><button className="btn btn-danger btn-md btnDel"><span className="fa fa-trash-alt"></span></button></td>
+                    <td style={{width:20}} className="text-center">
+                        <button className="btn btn-primary btn-md"onClick={() => this.editProd(this.state.prodlist[index])}><span className="fa fa-edit"></span></button>
+                    </td>
+                    <td style={{width:20}} className="text-center">
+                        <button className="btn btn-danger btn-md" onClick={() => this.delProd(prodid)}>
+                            <span className="fa fa-trash-alt"></span>
+                        </button>
+                    </td>
                 </tr>
         })
         // for mapping the product list
@@ -203,23 +311,29 @@ class Product extends Component
                                 <div className="form-group">
                                     <form className="form-horizontal" onSubmit={this.updateData} encType="multipart/form-data">
                                         <div className="form-group">
+                                            <div className="col-md-5">
+                                                <input id="idProd" ref="idProd" value={this.state.prodID} placeholder="Product ID" className="form-control" type="text" required/>
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Product Name</label>
                                             <div className="col-md-5">
-                                                <input ref="prodnames" placeholder="Product Name" className="form-control" type="text" required/>
+                                                <input id="prodnames" ref="prodnames" defaultValue={this.state.prodName} placeholder="Product Name" className="form-control" type="text" required/>
                                             </div>
                                         </div>
 
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Product Price</label>
                                             <div className="col-md-5">
-                                                <input ref="prodprices" placeholder="Product Price" className="form-control" type="number" required/>
+                                                <input id="prodprices" ref="prodprices" defaultValue={this.state.prodPrice} placeholder="Product Price" className="form-control" type="number" required/>
                                             </div>
                                         </div>
 
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Product Category</label>
                                             <div className="col-md-5">
-                                                <select ref="catID" required>
+                                                <select id="catID" ref="catID" value={this.state.prodCat} onChange={this.changeCat} required>
+                                                <option value={0}>Choose One</option>
                                                     {datakategori}
                                                 </select>
                                             </div>
@@ -228,14 +342,15 @@ class Product extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Product Image</label>  
                                             <div className="col-md-5">
-                                                <input ref="prodimg" name="prodimg" onChange={this.onchange} type="file" required/>
+                                                <input id="prodimg" ref="prodimg" name="prodimg" onChange={this.onchange} type="file"/>
+                                                {this.state.statusAdd}
                                             </div>
                                         </div>
 
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Product Description</label>
                                             <div className="col-md-5">
-                                                <textarea ref="proddesc" placeholder="Product Desc" className="form-control" required></textarea>
+                                                <textarea id="proddesc" ref="proddesc" value={this.state.prodDesc} onChange={this.changeDesc} placeholder="Product Desc" className="form-control" required></textarea>
                                             </div>
                                         </div>
                                         

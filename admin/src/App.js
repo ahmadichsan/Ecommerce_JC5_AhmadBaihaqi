@@ -9,6 +9,7 @@ import Invoice from './components/Invoice';
 import UnpaidView from './components/UnpaidView';
 import NPView from './components/NPView';
 import PaidView from './components/PaidView';
+import Failed from './components/Failed';
 import Category from './components/Category';
 import Product from './components/Product';
 import Productedit from './components/Productedit';
@@ -27,6 +28,7 @@ class App extends Component
         <Route path="/AdmUnpaid" component={UnpaidView}/>
         <Route path="/AdmNP" component={NPView}/>
         <Route path="/InvoiceDetail" component={PaidView}/>
+        <Route path="/AdmPF" component={Failed}/>
         <Route path="/Category" component={Category}/>
         <Route path="/Product" component={Product}/>
         <Route path="/Editproduct" component={Productedit}/>

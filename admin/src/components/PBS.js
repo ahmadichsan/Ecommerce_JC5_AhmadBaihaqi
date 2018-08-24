@@ -72,7 +72,7 @@ export default class PBS extends Component
             <td style={{width:100}} className="text-center">{INV}</td>
             <td style={{width:100}} className="text-center">{GrandTotal}</td>
             <td style={{width:100}} className="text-center">{orderDate}</td>
-            <td style={{width:100}} className="text-center"><Link to="/Invoicedetail">view</Link></td>
+            <td style={{width:100}} className="text-center"><Link to={{pathname: '/InvoiceDetail', state: {INV: INV}}}>view</Link></td>
             <td style={{width:100}} className="text-center">
                 <button className="btn btn-primary" onClick={() => this.PA(INV)}>
                     <span className="fa fa-map-marker-alt"></span>
