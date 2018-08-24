@@ -1066,10 +1066,26 @@ button.bg-light:focus {
 
 .sidebar-nav.navbar-collapse li a:hover
 {
-background-color:#e7e7e7;
+  background-color:#e7e7e7;
 }
 
 .nav.navbar-top-links.navbar-right li a:hover
 {
-background-color:#e7e7e7;
+  background-color:#e7e7e7;
+}
+
+.admin
+{
+  border-top-color: white;
+  border-radius: 0
+}
+
+.fontcolors > li a:hover
+{
+  color: white;
+}
+
+.fontcolors > li a
+{
+  color: rgb(44, 100, 32);
 }

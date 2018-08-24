@@ -145,7 +145,7 @@ class Userprofile extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label"></label>
                                             <div className="col-md-5">
-                                                <button type="button" className="btn btn-primary">Submit</button>
+                                                <button type="button" className="btn btn-success">Submit</button>
                                             </div>
                                         </div>
                                     </form>    
@@ -180,13 +180,13 @@ class Userprofile extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label"></label>
                                             <div className="col-md-5">
-                                                <input type="button" id="singlebutton" name="singlebutton" className="btn btn-primary" defaultValue="Submit"/>
+                                                <input type="button" id="singlebutton" name="singlebutton" className="btn btn-success" defaultValue="Submit"/>
                                             </div>
                                         </div>
                                         <div className="form-group">
                                             <label className="col-md-5 control-label"></label>
                                             <div className="col-md-5">
-                                                <Link to="/Paymenthis" id="nodecor">My Payment History</Link>
+                                                <Link to="/Paymenthis" id="nodecor"><button className="btn btn-primary">My Payment History</button></Link>
                                             </div>
                                         </div>
                                     </form>

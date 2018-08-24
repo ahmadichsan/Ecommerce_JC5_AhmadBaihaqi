@@ -6,6 +6,9 @@ import Login from './components/Login';
 import Home from './components/Home';
 import User from './components/User';
 import Invoice from './components/Invoice';
+import UnpaidView from './components/UnpaidView';
+import NPView from './components/NPView';
+import PaidView from './components/PaidView';
 import Category from './components/Category';
 import Product from './components/Product';
 import Productedit from './components/Productedit';
@@ -21,6 +24,9 @@ class App extends Component
         <Route path="/Home" component={Home}/>
         <Route path="/User" component={User}/>
         <Route path="/Invoice" component={Invoice}/>
+        <Route path="/AdmUnpaid" component={UnpaidView}/>
+        <Route path="/AdmNP" component={NPView}/>
+        <Route path="/InvoiceDetail" component={PaidView}/>
         <Route path="/Category" component={Category}/>
         <Route path="/Product" component={Product}/>
         <Route path="/Editproduct" component={Productedit}/>

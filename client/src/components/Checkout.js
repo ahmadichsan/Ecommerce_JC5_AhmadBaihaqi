@@ -42,6 +42,8 @@ class Checkout extends Component
 
                 if (length !== 0)
                 {
+                    // that if is to make sure that code below only works
+                    // when there is at least one data that sent from servers
                     var GT = 0;
                     for (var i in results) GT = GT + results[i].subtotal
 
@@ -134,7 +136,7 @@ class Checkout extends Component
                     <td className="text-right"><strong>{subtotal}</strong></td>
                 </tr>
         })
-        // for mapping the cart list
+        // for mapping the checkout list
 
         return (
             <div id="homeback">

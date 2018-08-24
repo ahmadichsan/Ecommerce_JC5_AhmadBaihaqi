@@ -14,7 +14,8 @@ import Userprofile from './components/Userprofile';
 import Productdetail from './components/Productdetail';
 import Paymenthis from './components/Paymenthis';
 import Checkout from './components/Checkout';
-import Paymentfailed from './components/Paymentfailed';
+import BeingProcess from './components/BeingProcess';
+import Failed from './components/Failed';
 import Invoice from './components/Invoice';
 import Cart from './components/Cart';
 import Footer from './components/Footer';
@@ -39,7 +40,8 @@ class App extends Component {
           <Route path="/Userprofile" component={Userprofile}/>
           <Route path="/Paymenthis" component={Paymenthis}/>
           <Route path="/Checkout" component={Checkout}/>
-          <Route path="/Paymentfailed" component={Paymentfailed}/>
+          <Route path="/BeingProcess" component={BeingProcess}/>
+          <Route path="/PaymentFailed" component={Failed}/>
           <Route path="/Invoice" component={Invoice}/>
           <Route path="/Cart" component={Cart}/>
           {/* <Route path="/Cart" component={CobaCart}/> */}

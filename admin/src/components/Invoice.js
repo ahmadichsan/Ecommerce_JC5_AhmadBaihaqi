@@ -3,6 +3,7 @@ import Navbar from './Navbar';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
 
+import NPList from './NPList';
 import Unpaid from './Unpaid';
 import Paid from './Paid';
 import PBS from './PBS';
@@ -42,7 +43,8 @@ class Invoice extends Component
                         </div>
                         <div>
                             <ul className="nav nav-tabs">
-                                <li className="active"><a href="#NP" data-toggle="tab" aria-expanded="true">Need Process</a></li>
+                                <li className="active"><a href="#Unpaid" data-toggle="tab" aria-expanded="true">Unpaid</a></li>
+                                <li><a href="#NP" data-toggle="tab" aria-expanded="false">Need Process</a></li>
                                 <li><a href="#Paid" data-toggle="tab" aria-expanded="false">Paid</a></li>
                                 <li><a href="#PBS" data-toggle="tab" aria-expanded="false">Package Being Sent</a></li>
                                 <li><a href="#PD" data-toggle="tab" aria-expanded="false">Package Arrived</a></li>
@@ -50,23 +52,26 @@ class Invoice extends Component
                                 <li><a href="#Failed" data-toggle="tab" aria-expanded="false">Failed</a></li>
                             </ul>
                             <div id="myTabContent" className="tab-content">
-                                <div className="tab-pane fade active in" id="NP">
-                                    <Unpaid control={this.state.controller} theChange={this.change}/>
+                                <div className="tab-pane active in" id="Unpaid">
+                                    <Unpaid control={this.state.controller}/>
                                 </div>
-                                <div className="tab-pane fade" id="Paid">
+                                <div className="tab-pane" id="NP">
+                                    <NPList control={this.state.controller} theChange={this.change}/>
+                                </div>
+                                <div className="tab-pane" id="Paid">
                                     <Paid control={this.state.controller} theChange={this.change}/>
                                 </div>
-                                <div className="tab-pane fade" id="PBS">
-                                    <PBS/>
+                                <div className="tab-pane" id="PBS">
+                                    <PBS control={this.state.controller} theChange={this.change}/>
                                 </div>
-                                <div className="tab-pane fade" id="PD">
-                                    <PA/>
+                                <div className="tab-pane" id="PD">
+                                    <PA control={this.state.controller} theChange={this.change}/>
                                 </div>
-                                <div className="tab-pane fade" id="Expired">
+                                <div className="tab-pane" id="Expired">
                                     <Expired/>
                                 </div>
-                                <div className="tab-pane fade" id="Failed">
-                                    <PF/>
+                                <div className="tab-pane" id="Failed">
+                                    <PF control={this.state.controller} theChange={this.change}/>
                                 </div>
                             </div>
                         </div>

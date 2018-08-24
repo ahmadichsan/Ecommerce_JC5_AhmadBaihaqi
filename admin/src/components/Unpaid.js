@@ -6,7 +6,8 @@ class Unpaid extends Component
 {
     state =
     {
-        unpaidList: []
+        unpaidList: [],
+        noitem: ['Empty']
     }
 
     componentWillMount = () =>
@@ -18,13 +19,13 @@ class Unpaid extends Component
             this.setState({
                 unpaidList: result
             })
-            console.log(result)
+            // console.log(result)
         })
     }
 
     componentWillReceiveProps = (val) =>
     {
-        console.log(val.control)
+        // console.log(val.control)
         if (val.control === '2')
         {
             axios.get('http://localhost:3001/unpaidList')
@@ -34,41 +35,9 @@ class Unpaid extends Component
                 this.setState({
                     unpaidList: result
                 })
-                console.log(result)
+                // console.log(result)
             })
         }
-    }
-
-    success = (val) =>
-    {
-        console.log(val)
-        axios.post('http://localhost:3001/paymentSuccess', 
-        {
-            orderID: val
-        })
-        .then((response) =>
-        {
-            var results = response.data
-            // console.log(results)
-            if (results === 1)
-            {
-                axios.get('http://localhost:3001/unpaidList')
-                .then((response) =>
-                {
-                    var result = response.data;
-                    this.setState({
-                        unpaidList: result
-                    })
-                    // console.log(result)
-                })
-                this.props.theChange('1')
-            }
-        })
-    }
-
-    failed = (val) =>
-    {
-        console.log(val)
     }
 
     render() 
@@ -76,26 +45,32 @@ class Unpaid extends Component
         const unpaidUser = this.state.unpaidList.map((item, index) => 
         {
             var orderID = item.orderID;
-            var userID = item.username;
+            var username = item.username;
             var orderDate = item.orderDate;
             var total = item.total;
 
             return <tr key={index}>
-            <td style={{paddingLeft:30}}>{userID}</td>
-            <td className="text-center">{orderID}</td>
-            <td className="text-center">{total}</td>
-            <td className="text-center">{orderDate}</td>
-            <td className="text-center"><Link to="/Checkout">view</Link></td>
-            <td className="text-center">
-                <button className="btn btn-success" onClick={() => this.success(orderID)}>
-                    <span className="fa fa-check"></span>
-                </button>&nbsp;
-                <button className="btn btn-danger" onClick={() => this.failed(orderID)}>
-                    <span className="fa fa-ban"></span>
-                </button>
-            </td>
+            <td style={{paddingLeft:30, width:100}}>{username}</td>
+            <td style={{width:100}} className="text-center">{orderID}</td>
+            <td style={{width:100}} className="text-center">{total}</td>
+            <td style={{width:100}} className="text-center">{orderDate}</td>
+            <td style={{width:100}} className="text-center"><Link to={{pathname: '/AdmUnpaid', state: {orderID: orderID}}}>view</Link></td>
         </tr>
         })
+
+        const noItem = this.state.noitem.map((item, index) => 
+        {
+            return <tr key={index}>
+                    <td colSpan='5' className="text-center" style={{fontSize:30}}>{item}</td>
+                </tr>
+        })
+        // to display info if the BP is empty
+
+        const unpaidLength = unpaidUser.length
+        // console.log(cartLength)
+
+        const views = (unpaidLength === 0) ? noItem : unpaidUser
+
         return (
         <div>
             <div className="row">
@@ -106,7 +81,7 @@ class Unpaid extends Component
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
-                                            <td>
+                                            <td style={{width:100}}>
                                                 <div className="dropdown">
                                                     <button className="btn btn-primary dropdown-toggle" id="nodecor" data-toggle="dropdown" style={{color:"white"}}>Sort by <div className="caret"></div></button>
                                                     <ul className="dropdown-menu">
@@ -116,8 +91,8 @@ class Unpaid extends Component
                                                     </ul>
                                                 </div>
                                             </td>
-                                            <td colSpan="2">
-                                                <span style={{paddingLeft:20}}>
+                                            <td colSpan="2" style={{width:100}}>
+                                                <span>
                                                     Display&nbsp;
                                                         <select>
                                                             <option value="5">5</option>
@@ -128,9 +103,8 @@ class Unpaid extends Component
                                                     of 100 Data
                                                 </span>
                                             </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style={{width:200}}>
+                                            <td style={{width:100}}></td>
+                                            <td style={{width:100}}>
                                                 <div className="input-group">
                                                     <input type="text" className="form-control" placeholder="Search..." />
                                                     <span className="input-group-btn">
@@ -142,16 +116,15 @@ class Unpaid extends Component
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th style={{paddingLeft:30}}>Username</th>
-                                            <th className="text-center">Order ID</th>
-                                            <th className="text-center">Total Payment</th>
-                                            <th className="text-center">Order Date</th>
-                                            <th className="text-center">Detail</th>
-                                            <th className="text-center">Action</th>
+                                            <th style={{paddingLeft:30, width:100}}>Username</th>
+                                            <th style={{width:100}} className="text-center">Order ID</th>
+                                            <th style={{width:100}} className="text-center">Total Payment</th>
+                                            <th style={{width:100}} className="text-center">Order Date</th>
+                                            <th style={{width:100}} className="text-center">Detail</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {unpaidUser}
+                                        {views}
                                     </tbody>
                                 </table>
                                 <div className="text-center col-md-12 col-sm-12 col-xs-12">

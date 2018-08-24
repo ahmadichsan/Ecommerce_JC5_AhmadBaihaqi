@@ -94,19 +94,73 @@ app.get('/unpaidList', (req, res) =>
 {  
   var pullData = `SELECT DISTINCT orderID, username, orderDate,
   sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
-  WHERE itemstatus_id="5" GROUP BY orderID`
+  WHERE itemstatus_id="1" GROUP BY orderID`
   db.query(pullData, (err, result) => 
   { 
+    // take data from checkout that needed to be confirmed its payment status by admin (itemstatus_id=5 means process)
+    // the result will displayed in Need Process Tab in User's Payment page at admin
     if(err) throw err
     else 
     {
       res.send(result);
       // console.log(result);
-      // console.log('asd')
     }
   });
 })
 // User Unpaid List for Admin page
+
+app.post('/UnpaidView', (req, res) =>
+{
+  var orderID = req.body.orderID;
+
+  var takeData = `SELECT * FROM checkout WHERE orderID=?`;
+  db.query(takeData, [orderID], (err, results) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log(results)
+      res.send(results);
+    }
+  })
+})
+// take unpaid list for admin view
+
+app.get('/NPList', (req, res) =>
+{  
+  var pullData = `SELECT DISTINCT orderID, username, orderDate,
+  sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
+  WHERE itemstatus_id="5" GROUP BY orderID`
+  db.query(pullData, (err, result) => 
+  { 
+    // take data from checkout that needed to be confirmed its payment status by admin (itemstatus_id=5 means process)
+    // the result will displayed in Need Process Tab in User's Payment page at admin
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+      // console.log(result);
+    }
+  });
+})
+// User NeedProcess List for Admin page
+
+app.post('/NPView', (req, res) =>
+{
+  var orderID = req.body.orderID;
+
+  var takeData = `SELECT * FROM checkout WHERE orderID=?`;
+  db.query(takeData, [orderID], (err, results) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log(results)
+      res.send(results);
+    }
+  })
+})
+// take need process list for admin view
 
 app.post('/paymentSuccess', (req, res) =>
 {
@@ -114,20 +168,27 @@ app.post('/paymentSuccess', (req, res) =>
   // console.log(orderID)
 
   var updateCheckout = `UPDATE checkout SET itemstatus_id="3" WHERE orderID="${orderID}";`
+  updateCheckout += `UPDATE cart SET cart.checkoutstat_id="3" WHERE id IN (SELECT checkout.cart_id FROM checkout
+  WHERE checkout.orderID="${orderID}");`
   updateCheckout += `SELECT * FROM checkout WHERE orderID="${orderID}"`
   db.query(updateCheckout, (err, result) => 
   {
+    // query 1: update table checkout, before was unpaid (1), now become paid (3)
+    // query 2: update table cart, before was unpaid (1), now become paid (3)
+    // query 3: select all from checkout with desire orderID (order id that already confirmed by admin)
+    // to be inserted into inv_detail table
     if (err) throw err
     else
     {
-      // console.log(result[1])
-      var dataforINV = result[1]
-      // take data for selected orderID
-      // console.log(dataforINV[0])   
+      // console.log(result[2])
+      var dataforINV = result[2]
+      // console.log(dataforINV)
+      // take data for selected orderID (result of query 2 above that wil be inserted into inv_detail table)
       
       var takeorderID = 'SELECT INV FROM inv_detail'
       db.query(takeorderID, (err, results) =>
       {
+        // takeorderID query to see the latest invoice code, to generate new inv code
         if (err) throw err
         else
         {
@@ -148,6 +209,36 @@ app.post('/paymentSuccess', (req, res) =>
           // generate Invoice Code
           // console.log(INVcode)
 
+          intoINVHead = () => 
+          {
+            var pullData = `SELECT DISTINCT INV, user_id, orderDate,
+            sum(subtotal)+dev_price AS grandtotal FROM inv_detail 
+            WHERE itemstatus_id="3" AND INV="${INVcode}"`
+            db.query(pullData, (err, result) => 
+            { 
+              // pull data from inv_detail then inserted into inv_header
+              if(err) throw err
+              else 
+              {
+                // console.log(result[0].orderDate)
+                var itemstatus_id = 3; // 3 means paid
+                var userID = result[0].user_id;
+                var INVCode = result[0].INV;
+                var GrandTotal = result[0].grandtotal;
+                var orderDate = result[0].orderDate;
+                var insertINV_header = `INSERT INTO inv_header SET user_id=?,
+                INV=?, grandtotal=?, itemstatus_id=?, orderDate=?`
+                db.query(insertINV_header, [userID, INVCode, GrandTotal, itemstatus_id, orderDate], (err, result) => 
+                {
+                  // query above to insert the data into inv_header (data from inv_detail)
+                  if (err) throw err;
+                  else res.send('1')
+                })
+              }
+            });
+          }
+
+          var counts = 0;
           for (var i=0; i<dataforINV.length; i++)
           {
             // loop for the item list
@@ -163,37 +254,20 @@ app.post('/paymentSuccess', (req, res) =>
             dataforINV[i].ship_name, dataforINV[i].ship_add,
             dataforINV[i].ship_phone, dataforINV[i].bank,
             dataforINV[i].dev_meth, dataforINV[i].dev_price,
-            itemstatus_id, dataforINV[i].orderDate], // value
+            itemstatus_id, dataforINV[i].orderDate],
             (err, results) =>
             {
+              // query above to insert selected data from checkout table (query 2 of updateCheckout) into inv_detail table
               if (err) throw err
-            })
-            // if (i === dataforINV.length - 1) res.send('1')
-          }
-
-          var pullData = `SELECT DISTINCT INV, user_id, orderDate,
-          sum(subtotal)+dev_price AS grandtotal FROM inv_detail 
-          WHERE itemstatus_id="3" AND INV="${INVcode}"`
-          // GROUP BY orderID
-          db.query(pullData, (err, result) => 
-          { 
-            if(err) throw err
-            else 
-            {
-              // console.log(result[0].orderDate)
-              var userID = result[0].user_id;
-              var INVCode = result[0].INV;
-              var GrandTotal = result[0].grandtotal;
-              var orderDate = result[0].orderDate;
-              var insertINV_header = `INSERT INTO inv_header SET user_id=?,
-              INV=?, grandtotal=?, orderDate=?`
-              db.query(insertINV_header, [userID, INVCode, GrandTotal, orderDate], (err, result) => 
+              else
               {
-                if (err) throw err;
-                else res.send('1')
-              })
-            }
-          });
+                counts++
+                if (counts === dataforINV.length) intoINVHead()
+                // counts === dataforINV.length because the if else in this query executed as much as the dataforINV.length
+                // to make sure the intoINVHead() only called one time, we have to use this if-else
+              }
+            })
+          }
         }
       })
     }
@@ -201,13 +275,43 @@ app.post('/paymentSuccess', (req, res) =>
 })
 // payment confirmed by admin - success
 
+app.post('/paymentFailed', (req, res) => 
+{
+  var orderID = req.body.orderID
+  // console.log(orderID)
+
+  var updateCheckoutandCart = `UPDATE checkout SET itemstatus_id="4" WHERE orderID="${orderID}";`
+  updateCheckoutandCart += `UPDATE cart SET cart.checkoutstat_id="4" WHERE id IN (SELECT checkout.cart_id FROM checkout
+  WHERE checkout.orderID="${orderID}");`
+  db.query(updateCheckoutandCart, (err, result) => 
+  {
+    if (err) throw err
+    else res.send('1')
+  })
+})
+// payment confirmed by admin - failed
+
+app.get('/pfList', (req, res) => 
+{
+  var pullData = `SELECT DISTINCT orderID, username, orderDate,
+  sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
+  WHERE itemstatus_id="4" GROUP BY orderID`
+  db.query(pullData, (err, result) => 
+  {
+    if (err) throw err;
+    else res.send(result)
+  })
+})
+// User payment failed List for Admin page
+
 app.get('/paidList', (req, res) =>
 {  
   var pullData = `SELECT username, INV, grandtotal, orderDate
   FROM inv_header JOIN userprofile
-  ON inv_header.user_id=userprofile.id GROUP BY INV ORDER BY INV`
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="3" GROUP BY INV ORDER BY INV`
   db.query(pullData, (err, result) => 
   { 
+    // take all data that the payment already confirmed (with status = success/paid payment only)
     if(err) throw err
     else 
     {
@@ -216,6 +320,81 @@ app.get('/paidList', (req, res) =>
   });
 })
 // User paid List for Admin page
+
+app.post('/pbsList', (req, res) =>
+{
+  var invoiceCode = req.body.invoice
+  console.log(invoiceCode)
+
+  var updatetoPBS = `UPDATE inv_header SET itemstatus_id="7" WHERE INV="${invoiceCode}";`
+  updatetoPBS += `UPDATE inv_detail SET itemstatus_id="7" WHERE INV="${invoiceCode}";`
+  updatetoPBS += `UPDATE checkout SET checkout.itemstatus_id="7" WHERE checkout.orderID IN (SELECT inv_detail.orderID
+  FROM inv_detail WHERE inv_detail.INV="${invoiceCode}");`
+  updatetoPBS += `UPDATE cart SET cart.checkoutstat_id="7" WHERE cart.id IN (SELECT checkout.cart_id FROM checkout
+  JOIN inv_detail ON checkout.orderID=inv_detail.orderID WHERE inv_detail.INV="${invoiceCode}");`
+  // itemstatus_id=7 means package being sent
+  db.query(updatetoPBS, (err, result) => 
+  {
+    if (err) throw err;
+    else res.send('1')
+  })
+})
+// Query to update the status after paid list clicked to be being sent (from paid into beingsent)
+
+app.get('/pbsList', (req, res) =>
+{  
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="7" GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    // take all data that the payment already confirmed and declared that the package being sent
+    // (with status = being sent only)
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// User pbs List for Admin page
+
+app.post('/paList', (req, res) =>
+{
+  var invoiceCode = req.body.invoice
+  console.log(invoiceCode)
+
+  var updatetoPA = `UPDATE inv_header SET itemstatus_id="8" WHERE INV="${invoiceCode}";`
+  updatetoPA += `UPDATE inv_detail SET itemstatus_id="8" WHERE INV="${invoiceCode}";`
+  updatetoPA += `UPDATE checkout SET checkout.itemstatus_id="8" WHERE checkout.orderID IN (SELECT inv_detail.orderID
+  FROM inv_detail WHERE inv_detail.INV="${invoiceCode}");`
+  updatetoPA += `UPDATE cart SET cart.checkoutstat_id="8" WHERE cart.id IN (SELECT checkout.cart_id FROM checkout
+  JOIN inv_detail ON checkout.orderID=inv_detail.orderID WHERE inv_detail.INV="${invoiceCode}");`
+  db.query(updatetoPA, (err, result) => 
+  {
+    if (err) throw err;
+    else res.send('1')
+  })
+})
+// Query to update the status after pbs list clicked to be delivered (from being sent into delivered)
+
+app.get('/paList', (req, res) =>
+{  
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="8" GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    // take all data that the payment already confirmed and declared that the package being sent
+    // (with status = being sent only)
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// User delivered List for Admin page
 
 // ========================= ADMIN - Product =========================
 
@@ -525,7 +704,7 @@ app.post('/Delcat', (req, res) =>
 // NOTE: Category set up, DONE
 
 // ================================================== USER SECTION ==================================================
-
+// ========================= USER - Register and Login =========================
 app.post('/Register', (req, res) =>
 {
   var FullName = req.body.fullname;
@@ -601,6 +780,188 @@ app.post('/Login', (req, res) =>
 })
 // User Login
 
+// ========================= USER - Userprofile =========================
+app.post('/Userprofile', (req, res) => 
+{
+  var userID = req.body.userID
+
+  var pullData = `SELECT * FROM userprofile WHERE id="${userID}"`
+  db.query(pullData, (err, result) => { 
+    if(err) {
+      throw err
+    } else {
+      res.send(result);
+    };
+  });
+})
+// to get the user data in userprofile
+
+// ========================= USER - Payment History =========================
+app.post('/userUnpaid', (req, res) =>
+{  
+  var userID = req.body.userID;
+  var pullData = `SELECT DISTINCT orderID, username, orderDate,
+  sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
+  WHERE itemstatus_id="1" AND checkout.user_id="${userID}" GROUP BY orderID`
+  db.query(pullData, (err, result) => 
+  { 
+    // take data from checkout that needed to be confirmed its payment status by admin (itemstatus_id=5 means process)
+    // the result will displayed in Need Process Tab in User's Payment page at admin
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+      // console.log(result);
+    }
+  });
+})
+// Unpaid List
+
+app.post('/userBP', (req, res) =>
+{  
+  var userID = req.body.userID;
+  var pullData = `SELECT DISTINCT orderID, username, orderDate,
+  sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
+  WHERE itemstatus_id="5" AND checkout.user_id="${userID}" GROUP BY orderID`
+  db.query(pullData, (err, result) => 
+  { 
+    // take data from checkout that needed to be confirmed its payment status by admin (itemstatus_id=5 means process)
+    // the result will displayed in Need Process Tab in User's Payment page at admin
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+      // console.log(result);
+    }
+  });
+})
+// Being Process List
+
+app.post('/userPaid', (req, res) =>
+{  
+  var userID = req.body.userID;
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="3" AND inv_header.user_id="${userID}"
+  GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    // take all data that the payment already confirmed (with status = success/paid payment only)
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// Paid List
+
+app.post('/userPf', (req, res) => 
+{
+  var userID = req.body.userID
+  var pullData = `SELECT DISTINCT orderID, username, orderDate,
+  sum(subtotal)+dev_price AS total FROM checkout JOIN userprofile ON checkout.user_id=userprofile.id 
+  WHERE itemstatus_id="4" AND checkout.user_id="${userID}" GROUP BY orderID`
+  db.query(pullData, (err, result) => 
+  {
+    if (err) throw err;
+    else res.send(result)
+  })
+})
+// Payment Failed List`
+
+app.post('/userPbs', (req, res) =>
+{  
+  var userID = req.body.userID;
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="7" AND inv_header.user_id="${userID}"
+  GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    // take all data that the payment already confirmed and declared that the package being sent
+    // (with status = being sent only)
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// Package being sent
+
+app.post('/userPa', (req, res) =>
+{  
+  var userID = req.body.userID;
+  var pullData = `SELECT username, INV, grandtotal, orderDate
+  FROM inv_header JOIN userprofile
+  ON inv_header.user_id=userprofile.id WHERE inv_header.itemstatus_id="8" AND inv_header.user_id="${userID}"
+  GROUP BY INV ORDER BY INV`
+  db.query(pullData, (err, result) => 
+  { 
+    // take all data that the payment already confirmed and declared that the package being sent
+    // (with status = being sent only)
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// Delivered List
+
+app.post('/userInvoice', (req, res) =>
+{  
+  var INVcode = req.body.codeINV;
+  var pullData = `SELECT * FROM inv_detail JOIN userprofile
+  ON inv_detail.user_id=userprofile.id WHERE inv_detail.INV="${INVcode}"`
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else 
+    {
+      res.send(result);
+    }
+  });
+})
+// User's Invoice
+
+app.post('/BeingProcess', (req, res) =>
+{
+  var orderID = req.body.orderID;
+
+  var takeData = `SELECT * FROM checkout WHERE orderID=?`;
+  db.query(takeData, [orderID], (err, results) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log(results)
+      res.send(results);
+    }
+  })
+})
+// take being process list for user view
+
+app.post('/Failed', (req, res) =>
+{
+  var orderID = req.body.orderID;
+  // console.log(userID)
+
+  var takeData = `SELECT * FROM checkout WHERE orderID=?`;
+  db.query(takeData, [orderID], (err, results) =>
+  {
+    if (err) throw err;
+    else
+    {
+      // console.log(results)
+      res.send(results);
+    }
+  })
+})
+// take failed list for user view
+
+// ========================= USER - Product =========================
 app.get('/Productlist', (req, res) =>
 {
     var pullData = 'SELECT * FROM product;'
@@ -655,21 +1016,7 @@ app.get('/Productdetail/:id', (req, res) =>
 })
 // User Product Detail
 
-app.post('/Userprofile', (req, res) => 
-{
-  var userID = req.body.userID
-
-  var pullData = `SELECT * FROM userprofile WHERE id="${userID}"`
-  db.query(pullData, (err, result) => { 
-    if(err) {
-      throw err
-    } else {
-      res.send(result);
-    };
-  });
-})
-// to get the user data in userprofile
-
+// ========================= USER - Cart =========================
 app.post('/Order', (req, res) => 
 {
   var userID = req.body.UserID;
@@ -756,9 +1103,9 @@ app.post('/Cart', (req, res) =>
     });
 })
 // Display cart list - this works, but if admin change the price, it will not update automatically
-// because i take the value of   the price, not the id of the product then take the price
-// solutin: function when admin edit the product data, its also change the table cart (prodName and prodPrice coulumn)
-// see app.post('/Editproduct')
+// because I take the value of the price, not the id of the product then take the price
+// solution: function when admin edit the product data, its also change the table cart (prodName and prodPrice coulumn)
+// see app.post('/Editproduct') in admin section
 
 app.post('/updateCart', (req, res) =>
 {
@@ -818,6 +1165,7 @@ app.post('/Defaultaddress', (req, res) =>
 })
 // Request default address from userprofile table to be displayed in cart component when needed
 
+// ========================= USER - Checkout =========================
 app.post('/Checkout', (req, res) =>
 {
   var userID = req.body.userID; //user id
@@ -855,7 +1203,7 @@ app.post('/Checkout', (req, res) =>
     {
       if (statuscheckout === 1)
       {
-        var updateCart = `UPDATE cart SET checkoutstat_id="${statuscheckout}" WHERE user_id="${userID}"`;
+        var updateCart = `UPDATE cart SET checkoutstat_id="${statuscheckout}" WHERE user_id="${userID}" AND checkoutstat_id="2"`;
         db.query(updateCart, (err, results) => {if(err) throw err});
       }
       // update the itemstatus of selected product in cart table
@@ -960,6 +1308,7 @@ app.post('/cancelOrder', (req, res) =>
   var deleteCart = `DELETE FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2"`
   db.query(deleteCart, (err, result) =>
   {
+    // if user has cart before cancel their order in checkout, delete first
     if (err) throw err;
     else
     {
@@ -1010,7 +1359,6 @@ app.post('/confirmPayment', (req, res) =>
 })
 // confirm payment just change the status of the item in cart and checkout table
 // after confirm by admin, the item will either move to invoice or back to checkout if failed (to be confirm)
-
 
 
 
@@ -1101,5 +1449,43 @@ app.post('/confirmPayment', (req, res) =>
 //     });
 // })
 // get user cart list - still maintain from above
+
+// var haribaru = new Date()
+// console.log(haribaru.getDate())
+// var a = haribaru.getDate();
+// console.log(haribaru.getMonth() + 1)
+// var b = haribaru.getMonth() + 1;
+// console.log(haribaru.getFullYear())
+// var c = haribaru.getFullYear();
+// console.log(haribaru.getHours())
+// var d = haribaru.getHours();
+// console.log(haribaru.getMinutes())
+// var e = haribaru.getMinutes();
+// console.log(haribaru.getSeconds())
+// var f = haribaru.getSeconds();
+
+// var orderDate = a + '-' + b + '-' + c
+// console.log(orderDate)
+// var orderTime = d + ':' + e + ':' + f
+// console.log(orderTime)
+// var expiryDate = d + ':' + (e+1) + ':' + f
+// console.log(expiryDate)
+
+// setToHappen = (fn, d) => 
+// {
+//   var t = d.getTime() - (new Date()).getTime();
+//   return setTimeout(fn, t);
+// }
+
+// var fn = console.log('masuk')
+// var dd = 
+// console.log(haribaru.getTime())
+
+// coba = () =>
+// {
+//   console.log('masuk')
+// }
+
+// setTimeout(coba, 5000)
 
 app.listen(3001);

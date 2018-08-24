@@ -6,7 +6,8 @@ class Paid extends Component
 {
     state =
     {
-        paidList: []
+        paidList: [],
+        noitem: ['Empty']
     }
 
     componentWillMount = () =>
@@ -18,13 +19,13 @@ class Paid extends Component
             this.setState({
                 paidList: result
             })
-            console.log(result)
+            // console.log(result)
         })
     }
 
     componentWillReceiveProps = (val) =>
     {
-        console.log(val.control)
+        // console.log(val.control)
         if (val.control === '2')
         {
             axios.get('http://localhost:3001/paidList')
@@ -34,9 +35,27 @@ class Paid extends Component
                 this.setState({
                     paidList: result
                 })
-                console.log(result)
+                // console.log(result)
             })
         }
+    }
+
+    pbs = (val) =>
+    {
+        // console.log(val)
+        axios.post('http://localhost:3001/pbsList', 
+        {
+            invoice: val
+        })
+        .then((response) =>
+        {
+            var results = response.data
+            // console.log(results)
+            if (results === 1)
+            {
+                this.props.theChange('1')
+            }
+        })
     }
 
     render() 
@@ -49,14 +68,31 @@ class Paid extends Component
             var orderDate = item.orderDate;
 
             return <tr key={index}>
-            <td style={{paddingLeft:30}}>{username}</td>
-            <td className="text-center">{INV}</td>
-            <td className="text-center">{GrandTotal}</td>
-            <td className="text-center">{orderDate}</td>
-            <td className="text-center"><Link to="/Invoicedetail">view</Link></td>
-            <td className="text-center"><button className="btn btn-success"><span className="fa fa-paper-plane"></span></button></td>
+            <td style={{paddingLeft:30, width:100}}>{username}</td>
+            <td style={{width:100}} className="text-center">{INV}</td>
+            <td style={{width:100}} className="text-center">{GrandTotal}</td>
+            <td style={{width:100}} className="text-center">{orderDate}</td>
+            <td style={{width:100}} className="text-center"><Link to={{pathname: '/InvoiceDetail', state: {INV: INV}}}>view</Link></td>
+            <td style={{width:100}} className="text-center">
+                <button className="btn btn-success" onClick={() => this.pbs(INV)}>
+                    <span className="fa fa-paper-plane"></span>
+                </button>
+            </td>
         </tr>
         })
+
+        const noItem = this.state.noitem.map((item, index) => 
+        {
+            return <tr key={index}>
+                    <td colSpan='6' className="text-center" style={{fontSize:30}}>{item}</td>
+                </tr>
+        })
+        // to display info if the BP is empty
+
+        const PaidLength = paidUser.length
+        // console.log(cartLength)
+
+        const views = (PaidLength === 0) ? noItem : paidUser
 
         return (
         <div>
@@ -68,7 +104,7 @@ class Paid extends Component
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
-                                            <td>
+                                            <td style={{width:100}}>
                                                 <div className="dropdown">
                                                     <button className="btn btn-primary dropdown-toggle" id="nodecor" data-toggle="dropdown" style={{color:"white"}}>Sort by <div className="caret"></div></button>
                                                     <ul className="dropdown-menu">
@@ -78,8 +114,8 @@ class Paid extends Component
                                                     </ul>
                                                 </div>
                                             </td>
-                                            <td colSpan="2">
-                                                <span className="">
+                                            <td colSpan="2" style={{width:100}}>
+                                                <span>
                                                     Display&nbsp;
                                                         <select>
                                                             <option value="5">5</option>
@@ -90,9 +126,9 @@ class Paid extends Component
                                                     of 100 Data
                                                 </span>
                                             </td>
-                                            <td></td>
-                                            <td></td>
-                                            <td style={{width:200}}>
+                                            <td style={{width:100}}></td>
+                                            <td style={{width:100}}></td>
+                                            <td style={{width:100}}>
                                                 <div className="input-group">
                                                     <input type="text" className="form-control" placeholder="Search..." />
                                                     <span className="input-group-btn">
@@ -104,16 +140,16 @@ class Paid extends Component
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th style={{paddingLeft:30}}>Username</th>
-                                            <th className="text-center">Invoice</th>
-                                            <th className="text-center">Grand Total</th>
-                                            <th className="text-center">Order Date</th>
-                                            <th className="text-center">Detail</th>
-                                            <th className="text-center">Action</th>
+                                            <th style={{paddingLeft:30, width:100}}>Username</th>
+                                            <th style={{width:100}} className="text-center">Invoice</th>
+                                            <th style={{width:100}} className="text-center">Grand Total</th>
+                                            <th style={{width:100}} className="text-center">Order Date</th>
+                                            <th style={{width:100}} className="text-center">Detail</th>
+                                            <th style={{width:100}} className="text-center">Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                       {paidUser}
+                                       {views}
                                     </tbody>
                                 </table>
                                 <div className="text-center col-md-12 col-sm-12 col-xs-12">

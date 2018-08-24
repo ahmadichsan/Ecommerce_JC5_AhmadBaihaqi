@@ -1,141 +1,187 @@
 import React, { Component } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import Cookies from 'universal-cookie';
+import axios from 'axios';
 
 const cookies = new Cookies();
 
 class Invoice extends Component
 {
+    state =
+    {
+        fullname: '',
+        address: '',
+        phone: '',
+        devMeth: '',
+        devPrice: '',
+        paymentMeth: '',
+        grandTotal: '',
+        orderDate: '',
+        invoiceID: '',
+        listInvoice: []
+    }
+
+    componentWillMount = () =>
+    {
+        var userID = cookies.get('sessionID');
+        var INVcode = this.props.location.state.INV;
+        if (userID !== undefined)
+        {
+            axios.post('http://localhost:3001/userInvoice', 
+            {
+                codeINV: INVcode
+                // codeINV: '00001'
+            })
+            .then((response) => 
+            {
+                console.log(response.data)
+                var results = response.data
+                var length = results.length
+
+                if (length !== 0)
+                {
+                    // that if is to make sure that code below only works
+                    // when there is at least one data that sent from servers
+                    var GT = 0;
+                    for (var i in results) GT = GT + results[i].subtotal
+
+                    this.setState({
+                        listInvoice: results,
+                        fullname: results[0].ship_name,
+                        address: results[0].ship_add,
+                        phone: results[0].ship_phone,
+                        paymentMeth: results[0].bank,
+                        devMeth: results[0].dev_meth,
+                        devPrice: results[0].dev_price,
+                        grandTotal: results[0].dev_price + GT,
+                        orderDate: results[0].orderDate,
+                        orderID: 'INV_' + results[0].INV
+                    })
+                }
+            })
+        }
+    }
+
     render()
     {
-        if (cookies.get('sessionID') === undefined)
-        {
-            return <Redirect to='/Login'/>
-        }
+        if (cookies.get('sessionID') === undefined) return <Redirect to='/Login'/>
         // to check if the users already login or not
+
+        const invoiceList = this.state.listInvoice.map((item, index) =>
+        {
+            var checkoutID = item.id // idcheckout
+            var prodName = item.prod_name;
+            var prodPrice = item.prod_price;
+            var prodQty = item.quantity;
+            var subtotal = item.subtotal;
+
+            return <tr key={index} nilai={checkoutID}>
+                    <td>{prodName}</td>
+                    <td className="text-center"><strong>{prodPrice}</strong></td>
+                    <td className="text-center">
+                        {prodQty}
+                    </td>
+                    <td className="text-right"><strong>{subtotal}</strong></td>
+                </tr>
+        })
+        // for mapping the invoice list
         
         return (
             <div id="homeback">
                 <div className="container padbot padtop">
                     <div className="row">
-                        <div className="col-xs-12">
-                            <div className="text-center">
-                                <h2>Invoice for Order ID 2018052122</h2>
-                            </div>
-                            <hr/>
-                            <div className="row">
-                                <div className="col-xs-12 col-md-3 col-lg-3 pull-left">
-                                    <div className="panel panel-default height">
-                                        <div className="panel-heading"><b>Billed to</b></div>
-                                        <div className="panel-body">
-                                            <strong>John Tor:</strong><br/>
-                                            Sabeni Street,<br/>
-                                            Melati Garden Sub-Districts,<br/>
-                                            Brother Land Districts,<br/>
-                                            <strong>No. 99</strong><br/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-xs-12 col-md-3 col-lg-3">
-                                    <div className="panel panel-default height">
-                                        <div className="panel-heading"><b>Shipped to</b></div>
-                                        <div className="panel-body">
-                                            <strong>John Tor:</strong><br/>
-                                            Sabeni Street,<br/>
-                                            Melati Garden Sub-Districts,<br/>
-                                            Brother Land Districts,<br/>
-                                            <strong>No. 99</strong><br/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-xs-12 col-md-3 col-lg-3">
-                                    <div className="panel panel-default height">
-                                        <div className="panel-heading"><b>Payment Information</b></div>
-                                        <div className="panel-body">
-                                            <strong>Payment Method:</strong> Go-Pay<br/>
-                                            <strong>Phone Number:</strong> 081310823820<br/>
-                                            <strong>Payment Date:</strong> 20180521<br/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-xs-12 col-md-3 col-lg-3 pull-right">
-                                    <div className="panel panel-default height">
-                                        <div className="panel-heading"><b>Order Information</b></div>
-                                        <div className="panel-body">
-                                            <strong>Order Date:</strong> 20180521<br/>
-                                            <strong>Express Delivery:</strong> Yes<br/>
-                                            <strong>Delivered by:</strong> Go-Send<br/>
-                                            <strong>Insurance:</strong> No<br/>
-                                            <strong>Coupon:</strong> Mei Ceria<br/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="row">
                         <div className="col-md-12">
                             <div className="panel panel-default">
                                 <div className="panel-heading">
-                                    <h3><strong>Order summary</strong></h3>
+                                    <h3><strong>Invoice</strong></h3>
                                 </div>
                                 <div className="panel-body">
                                     <div className="table-responsive">
-                                        <table className="table table-condensed">
+                                        <table className="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <td><strong>Item</strong></td>
-                                                    <td className="text-center"><strong>Price<br/>(IDR)</strong></td>
-                                                    <td className="text-center"><strong>Quantity</strong></td>
-                                                    <td className="text-right"><strong>Totals</strong></td>
+                                                    <th style={{width:200}}>Product</th>
+                                                    <th style={{width:200}} className="text-center">Price (IDR)</th>
+                                                    <th style={{width:200}} className="text-center">Quantity</th>
+                                                    <th style={{width:200}} className="text-right">SubTotal</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
+                                                {invoiceList}
                                                 <tr>
-                                                    <td>Pony Horse Cake</td>
-                                                    <td className="text-center">250000</td>
-                                                    <td className="text-center">1</td>
-                                                    <td className="text-right">250000</td>
+                                                    <td><b>Shipped to</b></td>
+                                                    <td className="text-center">{this.state.fullname}</td>
+                                                    <td className="text-center">{this.state.address}</td>
+                                                    <td className="text-right">{this.state.phone}</td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Superman Cupcakes</td>
-                                                    <td className="text-center">40000</td>
-                                                    <td className="text-center">3</td>
-                                                    <td className="text-right">120000</td>
+                                                    <td><b>Delivery Method</b></td>
+                                                    <td></td>
+                                                    <td className="text-center">
+                                                        {this.state.devMeth}
+                                                    </td>
+                                                    <td className="text-right">
+                                                        <b>{this.state.devPrice}</b>
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td>Wedding Cake</td>
-                                                    <td className="text-center">2000000</td>
-                                                    <td className="text-center">1</td>
-                                                    <td className="text-right">2000000</td>
+                                                    <td><b>Payment Method</b></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td className="text-right">
+                                                        {this.state.paymentMeth}
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="thick-line"></td>
-                                                    <td className="thick-line"></td>
-                                                    <td className="thick-line text-left"><strong>Subtotal</strong></td>
-                                                    <td className="thick-line text-right">2370000</td>
+                                                    <td><b>Date Order</b></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td className="text-right">
+                                                        <b>{this.state.orderDate}</b>
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="no-line"></td>
-                                                    <td className="no-line"></td>
-                                                    <td className="no-line text-left"><strong>Shipping</strong></td>
-                                                    <td className="no-line text-right">100000</td>
+                                                    <td><b>Invoice ID</b></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td className="text-right">
+                                                        <b>{this.state.orderID}</b>
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td className="no-line"></td>
-                                                    <td className="no-line"></td>
-                                                    <td className="no-line text-left"><strong>Total</strong></td>
-                                                    <td className="no-line text-right">2470000</td>
+                                                    <td><b>Expiry Date</b></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td className="text-right"><b>Belom Diganti</b></td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td className="text-center">
+                                                        <h3>Total</h3>
+                                                    </td>
+                                                    <td className="text-right">
+                                                        <h3>{this.state.grandTotal}</h3>
+                                                    </td>
                                                 </tr>
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td>
+                                                        <Link to="/Paymenthis">
+                                                            <button className="btn btn-primary"><span className="fa fa-arrow-left">&nbsp;&nbsp;</span>to Payment History</button>    
+                                                        </Link>
+                                                    </td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td className="text-right">
+                                                        <Link to="/Paymenthis">
+                                                            <button className="btn btn-success">Download PDF</button>    
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            </tfoot>
                                         </table>
-                                    </div>
-                                    <div>
-                                        <Link to="/Paymenthis">
-                                            <button className="btn btn-primary pull-left"><span className="fa fa-arrow-left">&nbsp;&nbsp;</span>to Payment History</button>    
-                                        </Link>
-                                        <button className="btn btn-success pull-right">DOWNLOAD PDF</button>
                                     </div>
                                 </div>
                             </div>

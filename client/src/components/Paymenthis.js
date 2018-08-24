@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Redirect } from 'react-router-dom';
 import Cookies from 'universal-cookie';
+
+import BPList from './BPList';
+import Unpaid from './Unpaid';
+import Paid from './Paid';
+import PBS from './PBS';
+import PA from './PA';
+import Expired from './Expired';
+import PF from './PF';
 
 const cookies = new Cookies();
 
@@ -8,130 +16,51 @@ class Paymenthis extends Component
 {
     render()
     {
-        if (cookies.get('sessionID') === undefined)
-        {
-            return <Redirect to='/Login'/>
-        }
+        if (cookies.get('sessionID') === undefined) return <Redirect to='/Login'/>
         // to check if the users already login or not
 
         return (
             <div id="homeback">
-                <div className="container padtop padbot">
+                <div className="container padbot">
                     <div className="row">
-                        <div className="col-md-12">
-                            <div className="panel panel-default">
-                                <div className="panel-heading">
-                                    <div className="">
-                                        <h3>
-                                            <b style={{float:"left"}}>Payment History</b>                                     
-                                        </h3>
-                                        <div className="input-group col-md-3 col-md-offset-9 col-xs-12">
-                                            <input type="text" className="form-control" placeholder="Search..." />
-                                            <span className="input-group-btn">
-                                                <button className="btn btn-default" type="button">
-                                                    <i className="fa fa-search"></i>
-                                                </button>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="panel-body">
-                                    <div className="table-responsive">
-                                        <table className="table table-hover">
-                                            <thead>
-                                                <tr>
-                                                    <td>
-                                                        <div className="dropdown">
-                                                            <button className="btn btn-primary dropdown-toggle" id="nodecor" data-toggle="dropdown" style={{color:"white"}}>Sort by <div className="caret"></div></button>
-                                                            <ul className="dropdown-menu">
-																<li><a href="">Paid</a></li>
-                                                                <li><a href="">Unpaid</a></li>
-																<li><a href="">Expired</a></li>
-                                                                <li><a href="">Order Date</a></li>
-                                                                <li><a href="">Order ID</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                    <td colSpan="2">
-                                                        <span className="">
-                                                            Display&nbsp;
-                                                                <select>
-                                                                    <option value="5">5</option>
-                                                                    <option value="15">15</option>
-                                                                    <option value="20">20</option>
-                                                                    <option value="25">25</option>
-                                                                </select>&nbsp;
-                                                            of 100 Data
-                                                        </span>
-                                                    </td>
-                                                    <td></td>
-                                                    <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span> All</button></td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Order ID</th>
-                                                    <th className="text-center">Order Status</th>
-                                                    <th className="text-center">Order Date</th>
-                                                    <th className="text-center">Detail</th>
-                                                    <th className="text-center">Settings</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>2018052601</td>
-                                                    <td className="text-center">Unpaid</td>
-                                                    <td className="text-center">20180526</td>
-                                                    <td className="text-center"><Link to="/Checkout">view</Link></td>
-                                                    <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>2018052122</td>
-                                                    <td className="text-center">Paid</td>
-                                                    <td className="text-center">20180521</td>
-                                                    <td className="text-center"><Link to="/Invoice">view</Link></td>
-                                                    <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>2018050912</td>
-                                                    <td className="text-center">Expired</td>
-                                                    <td className="text-center">20180509</td>
-                                                    <td className="text-center"></td>
-                                                    <td className="text-center"><button className="btn btn-danger"><span className="fa fa-trash-alt"></span></button></td>
-                                                </tr>
-                                            </tbody>
-                                            
-                                        </table>
-                                        <Link to="/Userprofile">
-                                            <button className="btn btn-primary pull-left"><span className="fa fa-arrow-left">&nbsp;&nbsp;</span>to Profile</button>    
-                                        </Link>
-                                    </div>
-                                </div>
+                        <div className="row">
+                            <div className="col-lg-12">
+                                <h1 className="page-header">Payment History</h1>
                             </div>
                         </div>
-
-                        <div className="text-center col-md-12 col-sm-12 col-xs-12">
-                            <ul className="pagination">
-                                <li className="page-item disabled">
-                                    <a className="page-link" href="">&laquo;</a>
-                                </li>
-                                <li className="page-item active">
-                                    <a className="page-link" href="">1</a>
-                                </li>
-                                <li className="page-item">
-                                    <a className="page-link" href="">2</a>
-                                </li>
-                                <li className="page-item">
-                                    <a className="page-link" href="">3</a>
-                                </li>
-                                <li className="page-item">
-                                    <a className="page-link" href="">4</a>
-                                </li>
-                                <li className="page-item">
-                                    <a className="page-link" href="">5</a>
-                                </li>
-                                <li className="page-item">
-                                    <a className="page-link" href="">&raquo;</a>
-                                </li>
+                        <div>
+                            <ul className="nav nav-tabs fontcolors">
+                                <li className="active"><a href="#Unpaid" data-toggle="tab" aria-expanded="true">Unpaid</a></li>
+                                <li><a href="#NP" data-toggle="tab" aria-expanded="false">Being Process</a></li>
+                                <li><a href="#Paid" data-toggle="tab" aria-expanded="false">Paid</a></li>
+                                <li><a href="#PBS" data-toggle="tab" aria-expanded="false">Package Being Sent</a></li>
+                                <li><a href="#PD" data-toggle="tab" aria-expanded="false">Package Arrived</a></li>
+                                <li><a href="#Expired" data-toggle="tab" aria-expanded="false">Expired</a></li>
+                                <li><a href="#Failed" data-toggle="tab" aria-expanded="false">Failed</a></li>
                             </ul>
+                            <div id="myTabContent" className="tab-content">
+                                <div className="tab-pane active in" id="Unpaid">
+                                    <Unpaid/>
+                                </div>
+                                <div className="tab-pane" id="NP">
+                                    <BPList/>
+                                </div>
+                                <div className="tab-pane" id="Paid">
+                                    <Paid/>
+                                </div>
+                                <div className="tab-pane" id="PBS">
+                                    <PBS/>
+                                </div>
+                                <div className="tab-pane" id="PD">
+                                    <PA/>
+                                </div>
+                                <div className="tab-pane" id="Expired">
+                                    <Expired/>
+                                </div>
+                                <div className="tab-pane" id="Failed">
+                                    <PF/>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
