@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom';
 import $ from 'jquery';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
@@ -49,7 +49,7 @@ class Product extends Component
         })
         .then((response) => 
         {
-            if (response)
+            if (response.data === 1)
             {
                 axios.get('http://localhost:3001/Product')
                 .then((response) => 
@@ -169,7 +169,8 @@ class Product extends Component
                             prodName: '',
                             prodPrice: '',
                             prodCat: 0,
-                            prodDesc: ''
+                            prodDesc: '',
+                            prodImg: ''
                         })
                         // console.log(this.state.catlist)
             
@@ -180,12 +181,13 @@ class Product extends Component
                             $('#prodprices').val(this.state.prodPrice);
                             $('#catID').val(this.state.prodCat);
                             $('#proddesc').val(this.state.prodDesc);
+                            $('#prodimg').val(this.state.prodImg);
                         })
                     })   
                 }
                 else if (respon.data === -1)
                 {
-                    console.log('gagal')
+                    // console.log('gagal')
                     this.setState({
                         statusAdd: 'Failed, please insert the picture of the product'
                     })
@@ -211,7 +213,8 @@ class Product extends Component
                             prodName: '',
                             prodPrice: '',
                             prodCat: 0,
-                            prodDesc: ''
+                            prodDesc: '',
+                            prodImg: ''
                         })
                         // console.log(this.state.catlist)
             
@@ -222,6 +225,7 @@ class Product extends Component
                             $('#prodprices').val(this.state.prodPrice);
                             $('#catID').val(this.state.prodCat);
                             $('#proddesc').val(this.state.prodDesc);
+                            $('#prodimg').val(this.state.prodImg);
                         })
                     })
                 }
@@ -302,7 +306,7 @@ class Product extends Component
                     <div id="page-wrapper">
                         <div className="row">
                             <div className="col-md-12">
-                                <h1 className="page-header">Add New Product</h1>
+                                <h1 className="page-header">Add/Edit New Product</h1>
                             </div>
                         </div>
 
@@ -312,7 +316,7 @@ class Product extends Component
                                     <form className="form-horizontal" onSubmit={this.updateData} encType="multipart/form-data">
                                         <div className="form-group">
                                             <div className="col-md-5">
-                                                <input id="idProd" ref="idProd" value={this.state.prodID} placeholder="Product ID" className="form-control" type="text" required/>
+                                                <input id="idProd" ref="idProd" value={this.state.prodID} placeholder="Product ID" className="form-control" type="hidden" required/>
                                             </div>
                                         </div>
                                         <div className="form-group">

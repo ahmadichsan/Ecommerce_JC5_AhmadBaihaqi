@@ -25,6 +25,36 @@ class Productlist extends Component
     }
     // To send request product and category list to server and display the response
 
+    Filter = () =>
+    {
+        var filtercat = document.querySelector('input[name="cat"]:checked').value;
+        axios.post('http://localhost:3001/Productlist', 
+        {
+            filterCat: filtercat
+        })
+        .then((respon) => 
+        {
+            this.setState({
+                prodlist: respon.data[0],
+                catlist: respon.data[1]
+            })
+        })
+    }
+
+    resetFilter = () =>
+    {
+        axios.get('http://localhost:3001/Productlist')
+        .then((response) => 
+        {
+            // console.log(response.data[0]);
+            // console.log(response.data[1]);
+            this.setState({
+                prodlist: response.data[0],
+                catlist: response.data[1]
+            })
+        })
+    }
+
     render()
     {
         const daftarproduk = this.state.prodlist.map((item, index) =>
@@ -68,8 +98,8 @@ class Productlist extends Component
                                 <form>
                                     <ul className="list-group category_block collapse" id="cat">
                                         {datakategori}
-                                        <li className="list-group-item"><input type="button" className="btn btn-success" value="Apply"/>&nbsp;
-                                        <input type="reset" className="btn btn-danger" value="Clear"/></li>
+                                        <li className="list-group-item"><input type="button" onClick={this.Filter} className="btn btn-success" value="Apply"/>&nbsp;
+                                        <input type="reset" className="btn btn-danger" onClick={this.resetFilter} value="Clear"/></li>
                                     </ul>
                                 </form>
                             </div>

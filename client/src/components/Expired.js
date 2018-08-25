@@ -27,7 +27,7 @@ export default class Expired extends Component
                                             </td>
                                             <td colSpan="2" style={{width:200}}></td>
                                             <td style={{width:200}}></td>
-                                            <td style={{width:200}}></td>
+                                            <td style={{width:200}}>[THIS PART IS STILL IN MAINTENANCE]</td>
                                             <td style={{width:200}}>
                                                 <div className="input-group">
                                                     <input type="text" className="form-control" placeholder="Search..." />

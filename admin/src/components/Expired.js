@@ -32,7 +32,7 @@ export default class Expired extends Component {
                                                         <option value="20">20</option>
                                                         <option value="25">25</option>
                                                     </select>&nbsp;
-                                                of 100 Data
+                                                of 100 Data&nbsp;[THIS PART IS STILL IN MAINTENANCE]
                                             </span>
                                         </td>
                                         <td></td>

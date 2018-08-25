@@ -22,7 +22,7 @@ class Invoice extends Component
 
     change = (val) =>
     {
-        console.log(val)
+        // console.log(val)
         if (val === '1') this.setState({controller: '2'})
     }
 
@@ -68,7 +68,7 @@ class Invoice extends Component
                                     <PA control={this.state.controller} theChange={this.change}/>
                                 </div>
                                 <div className="tab-pane" id="Expired">
-                                    <Expired/>
+                                    <Expired control={this.state.controller}/>
                                 </div>
                                 <div className="tab-pane" id="Failed">
                                     <PF control={this.state.controller} theChange={this.change}/>

@@ -12,7 +12,7 @@ import PaidView from './components/PaidView';
 import Failed from './components/Failed';
 import Category from './components/Category';
 import Product from './components/Product';
-import Productedit from './components/Productedit';
+// import Productedit from './components/Productedit';
 import Logout from './components/Logout';
 
 class App extends Component
@@ -31,7 +31,7 @@ class App extends Component
         <Route path="/AdmPF" component={Failed}/>
         <Route path="/Category" component={Category}/>
         <Route path="/Product" component={Product}/>
-        <Route path="/Editproduct" component={Productedit}/>
+        {/* <Route path="/Editproduct" component={Productedit}/> */}
         <Route path="/Logout" component={Logout}/>
     </div>
     );

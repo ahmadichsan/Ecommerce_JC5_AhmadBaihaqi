@@ -58,7 +58,7 @@ app.post('/admlogin', (req, res) =>
       {
         if (Username === result[i].username && Password === result[i].password)
         {
-          console.log('Login Berhasil');
+          // console.log('Login Berhasil');
           // console.log(result[i].id)
           var userID = result[i].id;
           res.send((userID).toString());
@@ -66,7 +66,7 @@ app.post('/admlogin', (req, res) =>
         }
         else if (i === result.length-1)
         {
-          console.log('Data tidak ditemukan, login gagal');
+          res.send('-1');
         }
       }
     }
@@ -496,24 +496,7 @@ app.post('/Addprod', (req, res) =>
             if(err) throw err;
             else
             {
-              var takeProdCatAmount = `SELECT totalprod FROM category WHERE id="${prod_cat}"`
-              // query above to take the inital amount (before new product added) of product based on categoryID
-              db.query(takeProdCatAmount, (err, result) => 
-              {
-                if (err) throw err
-                else
-                {
-                  var initialAmount = result[0].totalprod;
-                  var newAmount = initialAmount + 1;
-                  var addProdAmount = `UPDATE category SET totalprod="${newAmount}" WHERE id="${prod_cat}"`
-                  // query above to update the total amount of product based on the category after new product was added
-                  db.query(addProdAmount, (err, result) => 
-                  {
-                    if (err) throw err
-                    else res.send('1')
-                  })
-                }
-              })
+              res.send('1')
             }
           });
         }
@@ -609,53 +592,31 @@ app.post('/Delproduct', (req, res) =>
   var idproduk = req.body.produkID;
   // console.log(idproduk);
 
-  var takeCat = `SELECT cat_id FROM product WHERE id="${idproduk}"`
-  // query above to take the category ID of the deleted product ID
-  db.query(takeCat, (err, result) => { 
-    if(err) {
-      throw err
-    }
-    else
-    {
-      var categoryID = result[0].cat_id;
-      var takeProdCatAmount = `SELECT totalprod FROM category WHERE id="${categoryID}"`
-      // query above to take the inital amount (before product deleted) of product based on categoryID
-      db.query(takeProdCatAmount, (err, result) => {
-        if (err) {
-          throw err
-        }
-        else
-        {
-          var initialAmount = result[0].totalprod;
-          var newAmount = initialAmount - 1;
-          var reduceProdAmount = `UPDATE category SET totalprod="${newAmount}" WHERE id="${categoryID}"`
-          // query above to update the total amount of product based on the category after a product was delete
-          db.query(reduceProdAmount, (err, result) => {
-            if (err) throw err
-          })
-        }
-      })
-      res.send(result);
-    }
-  });
-
   var delData = `DELETE FROM product where id='${idproduk}'`
   // query above to delete the data
   db.query(delData, (err, result) => { 
     if(err) {
       throw err
     }
+    else
+    {
+      res.send('1')
+    }
   });
   // Notes: we have to update the total product first, then deleted the data
 })
 // Admin Del Product - also delete from cart
-// NOTE: Product set up, not finish
+// NOTE: Product set up, DONE
+// NOTE (again): if the selected product needed in cart table, the product will not be deleted
+// because of foreign key
 
 // ========================= ADMIN - Category =========================
 
 app.get('/Category', (req, res) =>
 {  
-  var pullData = 'SELECT * FROM category'
+  var pullData = `SELECT category.id, category.category,
+  COUNT(product.cat_id) AS jumlahproduk FROM category
+  LEFT JOIN product ON category.id=product.cat_id GROUP BY category.category`
   db.query(pullData, (err, result) =>
   { 
     if(err) 
@@ -680,35 +641,28 @@ app.post('/Addcat', (req, res) =>
   // console.log(cat_id);
   // console.log(cat_name);
 
-  var prodamount = `SELECT * FROM product WHERE cat_id="${cat_id}"`;
-  db.query(prodamount, (err, result) => { 
-    if(err) throw err;
-    // else console.log(result.length);
-    else
-    {
-      if (cat_stat === 'newcat')
-      {
-        // console.log(produknama);
-        // console.log(produkharga);
-        // console.log(produkgambar);
-        var newData = `INSERT INTO category SET category="${cat_name}", totalprod="${result.length}"`;
-        db.query(newData, (err, result) => { 
-          if(err) throw err;
-        });
-      }
-      else if (cat_stat === 'editcat')
-      {
-        // console.log(produkid);
-        // console.log(produknama);
-        // console.log(produkharga);
-        var editData = `UPDATE category SET category='${cat_name}', totalprod="${result.length}" WHERE id='${cat_id}' `;
-        db.query(editData, (err, result) => { 
-          if(err) throw err;
-        });
-      }
-    }
-  });
-  res.end();
+  if (cat_stat === 'newcat')
+  {
+    // console.log(produknama);
+    // console.log(produkharga);
+    // console.log(produkgambar);
+    var newData = `INSERT INTO category SET category="${cat_name}"`;
+    db.query(newData, (err, result) => { 
+      if(err) throw err
+      else res.send('1')
+    });
+  }
+  else if (cat_stat === 'editcat')
+  {
+    // console.log(produkid);
+    // console.log(produknama);
+    // console.log(produkharga);
+    var editData = `UPDATE category SET category='${cat_name}' WHERE id='${cat_id}' `;
+    db.query(editData, (err, result) => { 
+      if(err) throw err
+      else res.send('1')
+    });
+  }
 })
 // Admin Add and Edit Category
 
@@ -729,12 +683,17 @@ app.post('/Delcat', (req, res) =>
         if(err) {
           throw err
         }
+        else {
+          res.send('1')
+        }
       });  
     }
   })
 })
 // Admin Delete category
 // NOTE: Category set up, DONE
+// NOTE (again): if the selected category still has product that needed in cart table, the category will not be deleted
+// because of foreign key
 
 // ================================================== USER SECTION ==================================================
 // ========================= USER - Register and Login =========================
@@ -763,6 +722,9 @@ app.post('/Register', (req, res) =>
   var encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
   // console.log(encpass);
 
+  // var lowerusername = Username.toLowerCase()
+  // var cekUsername = `SELECT username FROM userprofile WHERE username="${Username}"`
+
   var sql = `INSERT INTO userprofile SET fullname="${FullName}", birth="${Birth}", 
   username="${Username}", password="${Password}", 
   gender="${Gender}", phone="${Phone}", 
@@ -786,7 +748,7 @@ app.post('/Login', (req, res) =>
   // console.log(Password);
   
   var encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
-  // // console.log(encpass);
+  // console.log(encpass);
 
   var pullData = "SELECT * FROM userprofile";
   db.query(pullData, (err, result) => {
@@ -797,7 +759,7 @@ app.post('/Login', (req, res) =>
       {
         if (Username === result[i].username && Password === result[i].password)
         {
-          console.log('Login Berhasil');
+          // console.log('Login Berhasil');
           // console.log(result[i].id)
           var userID = result[i].id;
           res.send((userID).toString());
@@ -805,7 +767,8 @@ app.post('/Login', (req, res) =>
         }
         else if (i === result.length-1)
         {
-          console.log('Data tidak ditemukan, login gagal');
+          // console.log('Data tidak ditemukan, login gagal');
+          res.send('-1')
         }
       }
     }
@@ -1010,6 +973,22 @@ app.get('/Productlist', (req, res) =>
     });
 })
 // User Product List
+
+app.post('/Productlist', (req, res) => 
+{
+  var catID = req.body.filterCat
+  var pullData = `SELECT * FROM product WHERE cat_id="${catID}";`
+    pullData += `SELECT * FROM category`
+    db.query(pullData, (err, results) => { 
+      if(err) {
+        throw err
+      } else {
+        res.send(results);
+        // console.log(results[1]);
+      };
+    })
+})
+//Filter product
 
 app.get('/Productdetail/:id', (req, res) =>
 {

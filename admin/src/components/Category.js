@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
-import $ from 'jquery';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
+import $ from 'jquery';
 
 const cookies = new Cookies();
 
@@ -15,40 +15,62 @@ class Category extends Component
         cat_ID: 0,
         cat_Name: ''
     }
-    
+
     componentWillMount = () =>
     {
-        var self = this;
-        $(document).ready(() => {
-            // code to read selected table row cell data (values).
-            $("#myTable").on('click','.btnEdit', function()
-            {
-                // get the current row
-                var currentRow = $(this).closest("tr"); 
-                var col1 = currentRow.attr('nilai'); // get current row 1st table cell TD value
-                var col2 = currentRow.find("td:eq(1)").text(); // get current row 2nd table cell TD value
-                 
-                //  console.log(col1);
-                //  console.log(col2);
+        axios.get('http://localhost:3001/Category')
+        .then((response) => 
+        {
+            // console.log(response.data);
+            this.setState({
+                catlist: response.data
+            })
+        })
+    }
+    
+    editCat = (val) =>
+    {
+        console.log(val)
+        var catID = val.id;
+        var catName = val.category;
+        this.setState({
+            cat_ID: catID,
+            cat_Name: catName
+        })
+        // console.log(this.state.cat_ID)
+        // console.log(this.state.cat_Name)
+    }
 
-                self.setState({
-                    cat_ID: col1,
-                    cat_Name: col2
+    changeName = (e) =>
+    {
+        this.setState({
+            cat_Name: e.target.value
+        })
+    }
+
+    delCat = (val) =>
+    {
+        // console.log(val)
+        axios.post('http://localhost:3001/Delcat', 
+        {
+            catID: val
+        })
+        .then((response) => 
+        {
+            var hasil = response.data
+            if (hasil === 1)
+            {
+                axios.get('http://localhost:3001/Category')
+                .then((response) => 
+                {
+                    // console.log(response.data);
+                    this.setState({
+                        catlist: response.data
+                    })
                 })
-            });
-            $("#myTable").on('click','.btnDel', function() {
-                // get the current row
-                var currentRow = $(this).closest("tr"); 
-                var col1 = currentRow.attr('nilai'); // get current row 1st table cell TD value
-                
-                // console.log(col1);
-                axios.post('http://localhost:3001/Delcat', {
-                    catID: col1
-                })
-                window.location.reload();
-           });
-        });
-    };
+            }
+        })
+    }
 
     addcat = (newcat) =>
     {
@@ -62,7 +84,29 @@ class Category extends Component
                 status: process,
                 catID: newcat.catid.value,
                 catName: newcat.catname.value
-            });
+            })
+            .then((respon) => 
+            {
+                if (respon.data === 1)
+                {
+                    axios.get('http://localhost:3001/Category')
+                    .then((response) => 
+                    {
+                        // console.log(response.data);
+                        this.setState({
+                            catlist: response.data,
+                            cat_ID: 0,
+                            cat_Name: ''
+                        })
+
+                        $(document).ready(() => 
+                        {
+                            $('#catid').val(this.state.cat_ID);
+                            $('#catname').val(this.state.cat_Name);
+                        })
+                    })
+                }
+            })
         }
         else if (newcat.catid.value !== '0' && newcat.catname.value !== '')
         {
@@ -73,20 +117,30 @@ class Category extends Component
                 status: process,
                 catID: newcat.catid.value,
                 catName: newcat.catname.value
-            });
-        }
-    }
-
-    componentDidMount = () =>
-    {
-        axios.get('http://localhost:3001/Category')
-        .then((response) => 
-        {
-            console.log(response.data);
-            this.setState({
-                catlist: response.data
             })
-        })
+            .then((respon) => 
+            {
+                if (respon.data === 1)
+                {
+                    axios.get('http://localhost:3001/Category')
+                    .then((response) => 
+                    {
+                        // console.log(response.data);
+                        this.setState({
+                            catlist: response.data,
+                            cat_ID: 0,
+                            cat_Name: ''
+                        })
+
+                        $(document).ready(() => 
+                        {
+                            $('#catid').val(this.state.cat_ID);
+                            $('#catname').val(this.state.cat_Name);
+                        })
+                    })
+                }
+            })
+        }
     }
 
     render()
@@ -98,7 +152,7 @@ class Category extends Component
         {
             let catid = item.id;
             let catname = item.category;
-            let prodamount = item.totalprod;
+            let prodamount = item.jumlahproduk;
             return <tr key={index} nilai={catid}>
                     <td className="text-center" style={{width:20}}>
                         {index + 1}
@@ -109,8 +163,16 @@ class Category extends Component
                     <td className="text-center" style={{width:100}}>
                         {prodamount}
                     </td>
-                    <td style={{width:20}} className="text-center"><button className="btn btn-primary btn-md btnEdit"><span className="fa fa-edit"></span></button></td>
-                    <td style={{width:20}} className="text-center"><button className="btn btn-danger btn-md btnDel"><span className="fa fa-trash-alt"></span></button></td>
+                    <td style={{width:20}} className="text-center">
+                        <button className="btn btn-primary btn-md" onClick={() => this.editCat(this.state.catlist[index])}>
+                            <span className="fa fa-edit"></span>
+                        </button>
+                    </td>
+                    <td style={{width:20}} className="text-center">
+                        <button className="btn btn-danger btn-md" onClick={() => this.delCat(catid)}>
+                            <span className="fa fa-trash-alt"></span>
+                        </button>
+                    </td>
                 </tr>
         })
         return (
@@ -130,7 +192,7 @@ class Category extends Component
                                     <form className="form-horizontal">
                                         <div className="form-group"> 
                                             <div className="col-md-5">
-                                                <input ref="catid" value={this.state.cat_ID} onChange={this.componentWillMount}
+                                                <input id="catid" ref="catid" value={this.state.cat_ID}
                                                 placeholder="Category ID" className="form-control" type="hidden" required/>
                                             </div>
                                         </div>
@@ -138,7 +200,7 @@ class Category extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="addprodcut">Category Name</label>  
                                             <div className="col-md-5">
-                                                <input ref="catname" defaultValue={this.state.cat_Name} onChange={this.componentWillMount}
+                                                <input id="catname" ref="catname" value={this.state.cat_Name} onChange={this.changeName}
                                                 placeholder="Category Name" className="form-control" type="text" required/>
                                             </div>
                                         </div>
@@ -146,7 +208,7 @@ class Category extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label"></label>
                                             <div className="col-md-5">
-                                                <button type="submit" onClick={() => this.addcat(this.refs)} className="btn btn-success" value="Submit">Submit</button>&nbsp;
+                                                <button type="button" onClick={() => this.addcat(this.refs)} className="btn btn-success" value="Submit">Submit</button>&nbsp;
                                                 <input type="reset" className="btn btn-danger" value="Clear"/>
                                             </div>
                                         </div>

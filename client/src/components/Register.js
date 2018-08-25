@@ -8,7 +8,8 @@ class Register extends Component
     {
         gender: '',
         redirect: false,
-        statusPass: <br/>
+        statusPass: <br/>,
+        typePass: 'password'
     }
 
     selectGender = (e) =>
@@ -53,27 +54,45 @@ class Register extends Component
         })
     }
 
-    // handleChange = (e) =>
-    // {
-    //     this.setState({
-    //         password: e.target.value,
-    //         confpassword: e.target.value
-    //     })
+    showPass = () =>
+    {
+        if(document.getElementById("showpass").checked === true)
+        {
+            this.setState({
+                typePass: 'text'
+            })
+            // console.log(this.state.typePass)
+        }
+        else if (document.getElementById("showpass").checked === false)
+        {
+            this.setState({
+                typePass: 'password'
+            })
+            // console.log(this.state.typePass)
+        }
+    }
 
-    //     if (this.state.password !== this.state.confpassword)
-    //     {
-    //         this.setState({
-    //             statusPass: 'Password Tidak Sama'
-    //         })
-    //     }
-    //     else if (this.state.password === this.state.confpassword)
-    //     {
-    //         this.setState({
-    //             statusPass: 'Password Sesuai'
-    //         })
-    //     }
-    // }
-    // confirm passwords
+    checkPass = (e) =>
+    {
+        // console.log(document.getElementById("password").value)
+        // console.log(e.target.value)
+        var inputPass = document.getElementById("password").value;
+        var confPass = e.target.value;
+
+        if (confPass === inputPass)
+        {
+            this.setState({
+                statusPass: 'Password Match'
+            })
+        }
+        else
+        {
+            this.setState({
+                statusPass: 'Password Not Match'
+            })
+        }
+    }
+    // confirm pass
 
     render()
     {
@@ -104,17 +123,15 @@ class Register extends Component
                                             </div>
 
                                             <div className="form-group">
-                                                {/* <input className="form-control" style={{width:390, display:'inline-block'}} onChange={this.handleChange} placeholder="Password" ref="password" type="password"/>&nbsp; */}
-                                                <input className="form-control" style={{width:390, display:'inline-block'}} placeholder="Password" ref="password" type="password"/>&nbsp;
+                                                <input id="password" className="form-control" style={{width:390, display:'inline-block'}} placeholder="Password" ref="password" type={this.state.typePass}/>&nbsp;
                                                 <label>
-                                                    <input style={{verticalAlign:'top'}} type="checkbox"/> Show Password
+                                                    <input id="showpass" style={{verticalAlign:'top'}} type="checkbox" onChange={this.showPass}/> Show Password
                                                 </label>
                                             </div>
 
                                             <div className="form-group">
-                                                {/* <input className="form-control" placeholder="Confirm Password" ref="confpassword" onChange={this.handleChange} type="password"/> */}
-                                                <input className="form-control" placeholder="Confirm Password" ref="confpassword" type="password"/>
-                                                {this.state.statusPass}
+                                                <input className="form-control" onChange={this.checkPass} placeholder="Confirm Password" ref="confpassword" type="password"/>
+                                                <label>{this.state.statusPass}</label>
                                             </div>
 
                                             <div className="form-group">

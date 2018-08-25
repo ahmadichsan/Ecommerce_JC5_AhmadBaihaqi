@@ -31,8 +31,9 @@ class Cart extends Component
         var userID = cookies.get('sessionID');
         if (cookies.get('sessionID') !== undefined)
         {
-            console.log(userID)
-            axios.post('http://localhost:3001/Cart', {
+            // console.log(userID)
+            axios.post('http://localhost:3001/Cart', 
+            {
                 UserID: userID
             })
             .then((response) => 
@@ -48,7 +49,7 @@ class Cart extends Component
                     var takeData = response.data[0]; // contain list of item in cart based on userID
                     var subprice = response.data[1]; // contain price per cart ID based on userID
                     var statusout = response.data[0][0].checkoutstat_id 
-                    
+
                     if (statusout === 2)
                     {
                         self.setState({
@@ -399,7 +400,7 @@ class Cart extends Component
                     </td>
                     <td className="text-right"><strong>{subTotPrice}</strong></td>
                     <td className="text-center">
-                        <button type="button" className="btn btn-danger btnDel" onClick={() => this.delete(cartID)}>
+                        <button type="button" className="btn btn-danger" onClick={() => this.delete(cartID)}>
                             <span className="fa fa-trash-alt"></span>
                         </button>
                     </td>

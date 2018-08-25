@@ -17,6 +17,7 @@ class Productdetail extends Component
     componentWillMount = () =>
     {
         var id_sblm = this.props.location.state.prodid;
+        console.log(id_sblm)
         axios.get('http://localhost:3001/Productdetail/' + id_sblm)
         .then((response) => 
         {
