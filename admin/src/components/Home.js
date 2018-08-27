@@ -2,11 +2,22 @@ import React, { Component } from 'react';
 import Navbar from './Navbar';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
+import axios from 'axios';
 
 const cookies = new Cookies();
 
 class Dashboard extends Component
 {
+    componentWillMount = () =>
+    {
+        axios.get('http://localhost:3001/mostOrderUser')
+        .then((respon) => 
+        {
+            var hasil = respon.data
+            console.log(hasil)
+        })
+        // to view user with most order
+    }
     render()
     {
         if (cookies.get('adminID') === undefined)

@@ -9,7 +9,9 @@ class Login extends Component
 {
     state =
     {
-        redirect: false
+        redirect: false,
+        statusLogin: <br/>,
+        typePass: 'password'
     }
 
     login = (userdata) =>
@@ -21,13 +23,40 @@ class Login extends Component
             username: username,
             password: password
         }).then((response) => {
-            var adminID = response.data;
+            var hasil = response.data;
             // console.log(response.data);
-            cookies.set('adminID', adminID, { path: '/' });
-            this.setState({
-                redirect: true
-            })
+            if (hasil !== -1)
+            {
+                cookies.set('adminID', hasil, { path: '/' });
+                this.setState({
+                    redirect: true
+                })
+            }
+            else
+            {
+                this.setState({
+                    statusLogin: 'Username/Password Incorrect'
+                })
+            }
         });    
+    }
+
+    showPassword = (e) =>
+    {
+        if(document.getElementById("showpass").checked === true)
+        {
+            this.setState({
+                typePass: 'text'
+            })
+            // console.log(this.state.typePass)
+        }
+        else if (document.getElementById("showpass").checked === false)
+        {
+            this.setState({
+                typePass: 'password'
+            })
+            // console.log(this.state.typePass)
+        }
     }
 
     render()
@@ -53,11 +82,12 @@ class Login extends Component
                                         <input className="form-control" placeholder="Username" ref="username" type="text" />
                                     </div>
                                     <div className="form-group">
-                                        <input className="form-control" placeholder="Password" ref="password" type="password"/>
+                                        <input className="form-control" placeholder="Password" ref="password" type={this.state.typePass}/><br/>
+                                        {this.state.statusLogin}
                                     </div>
                                     <div className="checkbox">
                                         <label>
-                                            <input name="remember" type="checkbox" value="Remember Me" /> Remember Me
+                                            <input id="showpass" type="checkbox" onChange={this.showPassword}/> Show Password
                                         </label>
                                     </div>
                                     <button type="button" onClick={() => this.login(this.refs)} className="btn btn-lg btn-success btn-block">Login</button>

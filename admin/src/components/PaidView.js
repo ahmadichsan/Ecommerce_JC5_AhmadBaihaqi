@@ -177,9 +177,9 @@ class Invoice extends Component
                                                 <td></td>
                                                 <td></td>
                                                 <td className="text-right">
-                                                    <Link to="/Invoice">
+                                                    {/* <Link to="/Invoice">
                                                         <button className="btn btn-success">Download PDF</button>    
-                                                    </Link>
+                                                    </Link> */}
                                                 </td>
                                             </tr>
                                         </tfoot>

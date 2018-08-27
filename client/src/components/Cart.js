@@ -125,6 +125,7 @@ class Cart extends Component
                 {
                     var takeData = response.data[0];
                     var subprice = response.data[1];
+                    console.log(subprice)
                     
                     self.setState({
                         detailCart: takeData,
@@ -235,10 +236,9 @@ class Cart extends Component
     }
     // to take default address if users want to use their address that store in their userprofile
 
-    delivery = () =>
+    delivery = (b) =>
     {
-        var e = document.getElementById("delivery");
-        var deliveryID = e.options[e.selectedIndex].value; // take the value from the selected method option
+        var deliveryID = b.target.value
         deliveryID = parseInt(deliveryID, 10); // 10 means radix parameter
         var listDev = this.state.devMethod;
         // this.state.devMethod is an array contain the delivery method, its ID and its price
@@ -316,7 +316,7 @@ class Cart extends Component
         
         $(document).ready(() => 
         {
-            var choosenDelivery = $("#delivery option:selected").text();
+            var choosenDelivery = $("#delivery option:selected").text(); // to get the name of delivery method
             // console.log(choosenDelivery)
             if (idDelivery !== '0' && cartItemLength > 0 && recieveby !== '' 
             && recieveAdd !== '' && recievePhone !== '' && methPay !== '') // if user already choose the delivery method, then checkout
@@ -379,6 +379,8 @@ class Cart extends Component
             var prodQty = item.qty;
             var prodPrice = item.prodPrice;
             var subtotal = this.state.subPrice;
+            // console.log(prodQty)
+            // console.log(this.state.detailCart)
 
             for (var i=0; i<subtotal.length; i++)
             {
@@ -478,6 +480,7 @@ class Cart extends Component
                                                     <td></td>
                                                     <td className="text-right">
                                                         <select id="delivery" ref="delivery" onChange={this.delivery}>
+                                                        {/* DELIVERY METHOD IS HEEEEEEEEEEEEEEEEEEEEEEEEEEERREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE */}
                                                             <option value={0}>Choose one</option>
                                                             {devList}
                                                         </select>

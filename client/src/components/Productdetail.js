@@ -17,7 +17,7 @@ class Productdetail extends Component
     componentWillMount = () =>
     {
         var id_sblm = this.props.location.state.prodid;
-        console.log(id_sblm)
+        // console.log(id_sblm)
         axios.get('http://localhost:3001/Productdetail/' + id_sblm)
         .then((response) => 
         {
@@ -144,9 +144,9 @@ class Productdetail extends Component
                                         <input className="text-center styleproddet" ref="prodName" type="hidden" value={prodname}/>&nbsp;
                                         <input className="text-center styleproddet" ref="prodPrice" type="hidden" value={prodprice}/>&nbsp;
                                         <button className="btn btn-success width90" onClick={() => this.increment()}><i className="fa fa-plus"></i></button><br/><br/>
-                                        <Link to="#" className="btn btn-success" onClick={() => this.order(this.refs)}>
+                                        <button type="button" className="btn btn-success" onClick={() => this.order(this.refs)}>
                                             <i className="fa fa-shopping-cart"></i> Add To Cart
-                                        </Link>
+                                        </button>
                                     </center>
                                 </div>
                             </div>             

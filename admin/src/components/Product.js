@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar';
 import axios from 'axios';
-// import { Link } from 'react-router-dom';
 import $ from 'jquery';
 import Cookies from 'universal-cookie';
 import { Redirect } from 'react-router-dom';
@@ -444,7 +443,7 @@ class Product extends Component
                                         </div>
                                     </div>
 
-                                    <div className="text-center col-md-12 col-sm-12 col-xs-12">
+                                    {/* <div className="text-center col-md-12 col-sm-12 col-xs-12">
                                         <ul className="pagination">
                                             <li className="page-item disabled">
                                                 <a className="page-link" href="">&laquo;</a>
@@ -468,7 +467,7 @@ class Product extends Component
                                                 <a className="page-link" href="">&raquo;</a>
                                             </li>
                                         </ul>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
                         </div>

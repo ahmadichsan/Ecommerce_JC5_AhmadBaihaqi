@@ -15,7 +15,9 @@ class Userprofile extends Component
         gender: '',
         phone: '',
         email: '',
-        address: ''
+        address: '',
+        statusOldPas: '',
+        statusChangeProfile: <br/>
     }
 
     componentWillMount = () =>
@@ -55,6 +57,92 @@ class Userprofile extends Component
         })
     }
 
+    changeProfile = (val) =>
+    {
+        var fullname = val.fullname.value
+        var birth = val.birth.value
+        var username = val.username.value
+        var gender = document.querySelector('input[name="gender"]:checked').value;
+        var phone = val.phone.value
+        var email = val.email.value
+        var address = val.address.value
+        var userID = cookies.get('sessionID')
+        // console.log(fullname)
+        // console.log(birth)
+        // console.log(username)
+        // console.log(gender)
+        // console.log(phone)
+        // console.log(email)
+        // console.log(address)
+
+        if (fullname !== '' && birth !== '' && username !== '' && gender !== '' && phone !== '' && email !== '' && address !== '')
+        {
+            axios.post('http://localhost:3001/changeProfile', 
+            {
+                userID: userID,
+                fullname: fullname,
+                birth: birth,
+                username: username,
+                gender: gender,
+                phone: phone,
+                email: email,
+                address: address
+            })
+            .then((respon) => {
+                var hasil = respon.data
+                if (hasil === 1)
+                {
+                    axios.post('http://localhost:3001/Userprofile', 
+                    {
+                        userID: cookies.get('sessionID')
+                    })
+                    .then((response) => 
+                    {
+                        // console.log(response.data[0]);
+                        this.setState({
+                            prodlist: response.data[0],
+                            fullname: response.data[0].fullname,
+                            birth: response.data[0].birth,
+                            username: response.data[0].username,
+                            gender: response.data[0].gender,
+                            phone: response.data[0].phone,
+                            email: response.data[0].email,
+                            address: response.data[0].address
+                        })
+                    })
+                }
+            })
+        }
+        else
+        {
+            this.setState({
+                statusChangeProfile: 'Please fill all data'
+            })
+        }
+
+        
+    }
+    
+    checkOldPass = (e) =>
+    {
+        // console.log(e.target.value)
+        var input = e.target.value
+        var userID = cookies.get('seesionID')
+        axios.post('http://localhost:3001/checkOldPass', {
+            oldPass: input,
+            userID: userID
+        })
+        .then((respon) => {
+            var hasil = respon.data
+            
+        })
+    }
+
+    changePassword = () =>
+    {
+        
+    }
+
     render()
     {
         // console.log(cookies.get('sessionID'))
@@ -72,20 +160,6 @@ class Userprofile extends Component
                                 <div className="form-group">
                                     <legend className="col-md-12 col-xs-12">Edit Profile</legend>
                                     <form className="form-horizontal">
-                                        <div className="form-group">
-                                            <label className="col-md-5 control-label" id="fromprof">Profile Picture</label>
-                                            <div className="col-md-5">
-                                                <div id="profpic"></div>
-                                            </div>
-                                        </div>
-                                            
-                                        <div className="form-group">
-                                            <label className="col-md-5 control-label" id="fromprof">Upload photo</label>  
-                                            <div className="col-md-5">
-                                                <input ref="userphoto" name="userphoto" type="file"/>
-                                            </div>
-                                        </div>
-                                            
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="fromprof">Full Name</label>  
                                             <div className="col-md-5">
@@ -136,16 +210,19 @@ class Userprofile extends Component
                                         </div>
 
                                         <div className="form-group">
-                                            <label className="col-md-5 control-label" id="fromprof">Address</label>  
+                                            <label className="col-md-5 control-label" id="fromprof">Address</label> 
                                             <div className="col-md-5">
-                                                <textarea className="form-control" ref="address" rows="10" value={this.state.address} onChange={this.handleChange}>Address</textarea>
+                                                <textarea placeholder="Address" className="form-control" ref="address" rows="10" value={this.state.address} onChange={this.handleChange}>Address</textarea>
+                                            </div>
+                                            <div>
+                                                <span style={{color:'red'}}>{this.state.statusChangeProfile}</span>
                                             </div>
                                         </div>
                                             
                                         <div className="form-group">
                                             <label className="col-md-5 control-label"></label>
                                             <div className="col-md-5">
-                                                <button type="button" className="btn btn-success">Submit</button>
+                                                <button type="button" onClick={() => this.changeProfile(this.refs)} className="btn btn-success">Submit</button>
                                             </div>
                                         </div>
                                     </form>    
@@ -159,21 +236,22 @@ class Userprofile extends Component
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="fromprof">Old Password</label>  
                                             <div className="col-md-5">
-                                                <input id="oldpass" name="oldpass" type="password" placeholder="Old Password" className="form-control"/>
+                                                <input id="oldpass" ref="oldpass" type="password" onChange={this.checkOldPass}
+                                                placeholder="Old Password" className="form-control"/>
                                             </div>
                                         </div>
                                             
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="fromprof">New Password</label>
                                             <div className="col-md-5">
-                                                <input id="newpass" name="newpass" type="password" placeholder="New Password" className="form-control"/>
+                                                <input id="newpass" ref="newpass" type="password" placeholder="New Password" className="form-control"/>
                                             </div>
                                         </div>
                                             
                                         <div className="form-group">
                                             <label className="col-md-5 control-label" id="fromprof">Confirm Password</label>
                                             <div className="col-md-5">                     
-                                                <input id="confpass" name="confpass" type="password" placeholder="Confirm Password" className="form-control"/>
+                                                <input id="confpass" ref="confpass" type="password" placeholder="Confirm Password" className="form-control"/>
                                             </div>
                                         </div>
                                         

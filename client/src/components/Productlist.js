@@ -36,10 +36,10 @@ class Productlist extends Component
         {
             this.setState({
                 prodlist: respon.data[0],
-                catlist: respon.data[1]
             })
         })
     }
+    //product filter
 
     resetFilter = () =>
     {
@@ -50,10 +50,10 @@ class Productlist extends Component
             // console.log(response.data[1]);
             this.setState({
                 prodlist: response.data[0],
-                catlist: response.data[1]
             })
         })
     }
+    // reset filter
 
     render()
     {
@@ -108,7 +108,7 @@ class Productlist extends Component
                             <div className="row">
                                 {daftarproduk}
                             </div>
-                            <div className="text-center col-md-12 col-sm-12 col-xs-12">
+                            {/* <div className="text-center col-md-12 col-sm-12 col-xs-12">
                                 <ul className="pagination">
                                     <li className="page-item disabled">
                                         <a className="page-link" href="">&laquo;</a>
@@ -132,7 +132,7 @@ class Productlist extends Component
                                         <a className="page-link" href="">&raquo;</a>
                                     </li>
                                 </ul>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

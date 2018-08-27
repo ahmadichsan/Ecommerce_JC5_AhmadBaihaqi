@@ -9,7 +9,8 @@ class Register extends Component
         gender: '',
         redirect: false,
         statusPass: <br/>,
-        typePass: 'password'
+        typePass: 'password',
+        statusUsername: <br/>
     }
 
     selectGender = (e) =>
@@ -49,6 +50,12 @@ class Register extends Component
             {
                 self.setState({
                     redirect: true
+                })
+            }
+            else if (status === -1)
+            {
+                this.setState({
+                    statusUsername: 'Username already taken'
                 })
             }
         })
@@ -120,6 +127,7 @@ class Register extends Component
 
                                             <div className="form-group">
                                                 <input className="form-control" placeholder="Username" ref="username" type="text"/>
+                                                <label>{this.state.statusUsername}</label>
                                             </div>
 
                                             <div className="form-group">

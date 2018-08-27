@@ -1,10 +1,178 @@
 import React, { Component } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
+import axios from 'axios';
+import Cookies from 'universal-cookie';
+
+const cookies = new Cookies();
 
 class Home extends Component
 {
+    state = 
+    {
+        newArrival: [],
+        carouselSatu: [],
+        carouselDua: [],
+        redirectCart: false,
+        redirectLogin: false
+    }
+    componentWillMount = () =>
+    {
+        axios.get('http://localhost:3001/Homeproduct')
+        .then((response) => 
+        {
+            // console.log(response.data);
+            this.setState({
+                newArrival: response.data
+            })
+        })
+
+        axios.get('http://localhost:3001/Carouselhome')
+        .then((response) => 
+        {
+            console.log(response.data);
+            var hasil = response.data
+            var carouselSatu = []
+            var carouselDua = []
+            for (var i=0; i<hasil.length; i++)
+            {
+                if (i < 3)
+                {
+                    carouselSatu.push(hasil[i])
+                }
+                else
+                {
+                    carouselDua.push(hasil[i])
+                }
+            }
+
+            this.setState({
+                carouselSatu: carouselSatu,
+                carouselDua: carouselDua
+            })
+        })
+    }
+    // To send request product and category list to server and display the response
+
+    order = (prodid, prodname, prodprice) =>
+    {
+        var prod_id = prodid;
+        var prod_name = prodname;
+        var prod_price = prodprice;
+        var prodqty = 1;
+        var userID = cookies.get('sessionID');
+
+        if (userID !== undefined)
+        {
+            axios.post('http://localhost:3001/Order', 
+            {
+                UserID: userID,
+                prodQty: prodqty,
+                prodID: prod_id,
+                prodName: prod_name,
+                prodPrice: prod_price
+            })
+            .then((response) => 
+            {
+                // console.log(response.data)
+                var storestat = response.data;
+                if (storestat === 1)
+                {
+                    this.setState({
+                        redirectCart: true
+                    })
+                }
+                // to redirect to cart
+            })
+        }
+        else
+        {
+            this.setState({
+                redirectLogin: true
+            })
+        }
+    }
+    // order from carousel
+
     render()
     {
+        if (this.state.redirectCart) return <Redirect to='/Cart'/>
+        // if user success add to cart, then move to cart page
+        if (this.state.redirectLogin) return <Redirect to='/Login'/>
+        // if user not login yet, when user hit add to cart, they will
+        // redirect to login
+
+        const newArrivals = this.state.newArrival.map((item, index) => 
+        {
+            let prodid = item.id;
+            let prodname = item.prod_name;
+            let prodimage = item.prod_img;
+            return <div key={index} className="col-md-4">
+            <div className="card ada mb-3">
+                <div className="card-header">
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor"><h3>{prodname}</h3></Link>
+                </div>
+                <div className="card-body">
+                    <img className="" id="stylegambar" src={'http://localhost:3001/images/' + prodimage} alt="asd"/>
+                </div>
+            </div>
+        </div>
+        })
+        // mapping new arrival
+
+        const carouselFirst = this.state.carouselSatu.map((item, index) => 
+        {
+            let prodid = item.id;
+            let prodname = item.prod_name;
+            let prodimage = item.prod_img;
+            let prodprice = item.prod_price;
+            return <div className="col-sm-4 col-xs-12" key={index}>
+                <div className="thumb-wrapper">
+                    <div className="img-box">
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor">
+                            <img src={'http://localhost:3001/images/' + prodimage} className="img-responsive img-fluid" alt=""/>
+                    </Link>
+                    </div>
+                    <div className="thumb-content">
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor">
+                        <h4>{prodname}</h4>
+                        <p className="item-price">
+                            <span>IDR{prodprice}</span>
+                        </p>
+                    </Link>
+                    <button type="button" className="btn btn-primary" onClick={() => this.order(prodid, prodname, prodprice)}>Add to Cart</button>
+                    </div>						
+                </div>
+            </div>
+        })
+        // carousel 1 new arrival
+
+        const carouselSecond = this.state.carouselDua.map((item, index) => 
+        {
+            let prodid = item.id;
+            let prodname = item.prod_name;
+            let prodimage = item.prod_img;
+            let prodprice = item.prod_price;
+            return <div className="col-sm-4 col-xs-12" key={index}>
+                <div className="thumb-wrapper">
+                    <div className="img-box">
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor">
+                            <img src={'http://localhost:3001/images/' + prodimage} className="img-responsive img-fluid" alt=""/>
+                    </Link>
+                    </div>
+                    <div className="thumb-content">
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor">
+                        <h4>{prodname}</h4>
+                        <p className="item-price">
+                            <span>IDR{prodprice}</span>
+                        </p>
+                    </Link>
+                    <button type="button" className="btn btn-primary">Add to Cart</button>
+                    </div>						
+                </div>
+            </div>
+        })
+        // carousel 2 new arrival
+
         return (
             <div id="homeback">
                 <div className="jumbotron backjumbo paddingku col-md-12">
@@ -16,8 +184,8 @@ class Home extends Component
                             <hr className="my-4"/>
                             <p id="Fugaz" style={{color:"black",fontSize:30}}>#IndieCakery <br/> #WeCountMemoriesNotCalories</p>
                             <div className="lead">
-                                <a className="btn btn-primary btn-lg" href="#newestproduct">Grab Our Newest Product!</a>&nbsp;
-                                <a className="btn btn-success btn-lg" href="#mostordered">Our Most Ordered Product!</a><br/><br/>
+                                <a className="btn btn-primary btn-lg" href="#newestproduct">Grab Our Latest Product!</a>&nbsp;
+                                <a className="btn btn-success btn-lg" href="#mostordered">Our New Arrival Product!</a><br/><br/>
                                 <center>
                                     <a className="btn btn-warning btn-lg" href="#custtest">Cust Testimonials</a>
                                 </center>
@@ -30,68 +198,9 @@ class Home extends Component
                 <div className="container">
                     <div className="row">
                         <div className="col-md-12 garisnya">
-                            <h2 id="mostordered"><b>Most</b> Ordered</h2>
+                            <h2 id="mostordered"><b>New</b> Arrival</h2>
                             <div className="row">
-                                <div className="col-md-4">
-                                    <div className="card ada mb-3">
-                                        <div className="card-header">
-                                            <Link to="/Productdetail" id="nodecor"><h3>Fia's Cake</h3></Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <img className="" id="stylegambar" src="bootstrap-3.3.7-dist/css/img/stock/used/box1.jpg" alt=""/>     
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className="card ada mb-3">
-                                        <div className="card-header">
-                                            <Link to="/Productdetail" id="nodecor"><h3>Pony Horse Cake</h3></Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <img className="" id="stylegambar" src="bootstrap-3.3.7-dist/css/img/stock/used/box2.jpg" alt=""/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className="card ada mb-3">
-                                        <div className="card-header">
-                                            <Link to="/Productdetail" id="nodecor"><h3>Papa Cupcake</h3></Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <img className="" id="stylegambar" src="bootstrap-3.3.7-dist/css/img/stock/used/box3.jpg" alt=""/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className="card ada mb-3">
-                                        <div className="card-header">
-                                            <Link to="/Productdetail" id="nodecor"><h3>Muslimah Cupcake</h3></Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <img className="" id="stylegambar" src="bootstrap-3.3.7-dist/css/img/stock/used/box4.jpg" alt=""/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className="card ada mb-3">
-                                        <div className="card-header">
-                                            <Link to="/Productdetail" id="nodecor"><h3>Birthday Cupcake</h3></Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <img className="" id="stylegambar" src="bootstrap-3.3.7-dist/css/img/stock/used/box5.jpg" alt=""/>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="col-md-4">
-                                    <div className="card ada mb-3">
-                                        <div className="card-header">
-                                            <Link to="/Productdetail" id="nodecor"><h3>Pure-white Wedding Cake</h3></Link>
-                                        </div>
-                                        <div className="card-body">
-                                            <img className="" id="stylegambar" src="bootstrap-3.3.7-dist/css/img/stock/used/box6.jpg" alt=""/>
-                                        </div>
-                                    </div>
-                                </div>
+                                {newArrivals}
                             </div>
                         </div>
                     </div>
@@ -148,7 +257,7 @@ class Home extends Component
                 <div className="container" id="newestproduct">
                     <div className="row">
                         <div className="col-md-12 garisnya">
-                            <h2>Newest <b>Products</b></h2>
+                            <h2>Latest <b>Products</b></h2>
                             <div id="myCarousel" className="carousel slide" data-ride="carousel" data-interval="0">
                                 <ol className="carousel-indicators">
                                     <li data-target="#myCarousel" data-slide-to="0" className="active"></li>
@@ -158,144 +267,13 @@ class Home extends Component
                                 <div className="carousel-inner">
                                     <div className="item carousel-item active">
                                         <div className="row">
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box1.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Fia's Cake</h4>
-                                                        <p className="item-price">
-                                                            <span>IDR250.000</span>
-                                                        </p>
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box2.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Pony Horse Cake</h4>
-                                                        <p className="item-price"><span>IDR300.000</span></p>
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>		
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box3.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Papa Cupcake</h4>
-                                                        <p className="item-price"><span>IDR150.000</span></p>
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>								
+                                            {carouselFirst}
                                         </div>
                                     </div>
 
                                     <div className="item carousel-item">
                                         <div className="row">
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box4.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Muslimah Cupcake</h4>
-                                                        <p className="item-price"><span>IDR95.000</span></p>
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box5.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Birthday Cupcake</h4>
-                                                        <p className="item-price"><span>IDR95.000</span></p>                                            
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box6.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Pure-white Wedding Cake</h4>
-                                                        <p className="item-price"><span>IDR1.000.000</span></p>
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="item carousel-item">
-                                        <div className="row">
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box7.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Wedding Cupcake</h4>
-                                                        <p className="item-price"><span>IDR400.000</span></p>                                            
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box8.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Cakepops</h4>
-                                                        <p className="item-price"><span>IDR40.000</span></p>
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
-                                            <div className="col-sm-4 col-xs-12">
-                                                <div className="thumb-wrapper">
-                                                    <div className="img-box">
-                                                        <Link to="/Productdetail">
-                                                            <img src="bootstrap-3.3.7-dist/css/img/stock/used/box9.jpg" className="img-responsive img-fluid" alt=""/>
-                                                        </Link>
-                                                    </div>
-                                                    <div className="thumb-content">
-                                                        <h4>Engagement Cupcake</h4>
-                                                        <p className="item-price"><span>IDR75.000</span></p>                                            
-                                                        <Link to="/Productdetail" className="btn btn-primary">Add to Cart</Link>
-                                                    </div>						
-                                                </div>
-                                            </div>
+                                            {carouselSecond}
                                         </div>
                                     </div>
                                 </div>

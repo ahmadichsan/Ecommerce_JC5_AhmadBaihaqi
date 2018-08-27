@@ -56,7 +56,7 @@ app.post('/admlogin', (req, res) =>
     {
       for (var i=0; i<result.length; i++)
       {
-        if (Username === result[i].username && Password === result[i].password)
+        if (Username === result[i].username && encpass === result[i].password)
         {
           // console.log('Login Berhasil');
           // console.log(result[i].id)
@@ -74,6 +74,19 @@ app.post('/admlogin', (req, res) =>
 })
 // Admin Login
 // NOTE: Admin login setup is done
+
+// ========================= ADMIN - Home =========================
+
+app.get('/mostOrderUser', (req, res) =>
+{  
+  var pullData = 'SELECT username, COUNT(*) FROM inv_header JOIN userprofile ON inv_header.user_id=userprofile.id GROUP BY inv_header.user_id'
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else res.send(result);
+  });
+})
+// User with most order List for Admin page
 
 // ========================= ADMIN - User List =========================
 
@@ -592,7 +605,8 @@ app.post('/Delproduct', (req, res) =>
   var idproduk = req.body.produkID;
   // console.log(idproduk);
 
-  var delData = `DELETE FROM product where id='${idproduk}'`
+  var delData = `DELETE FROM product WHERE id='${idproduk}';`
+  delData += `DELETE FROM cart WHERE prod_id="${idproduk}" AND checkoutstat_id="2"`
   // query above to delete the data
   db.query(delData, (err, result) => { 
     if(err) {
@@ -609,6 +623,9 @@ app.post('/Delproduct', (req, res) =>
 // NOTE: Product set up, DONE
 // NOTE (again): if the selected product needed in cart table, the product will not be deleted
 // because of foreign key
+// solution: prod_id foreign key already has been dropped. Then, if admin delete the product, it will also
+// affect the cart table. This action (del prod) will also delete data in cart table with the selected product id
+// and the status of the cart is in cart (code of checkoutstat_id: 2)
 
 // ========================= ADMIN - Category =========================
 
@@ -703,34 +720,37 @@ app.post('/Register', (req, res) =>
   var Birth = req.body.birth;
   var Username = req.body.username;
   var Password = req.body.password;
-  // var Confpass = req.body.confpassword;
   var Gender = req.body.gender;
   var Phone = req.body.phone;
   var Email = req.body.email;
   var Address = req.body.address;
             
-  console.log(FullName);
-  console.log(Birth);
-  console.log(Username);
-  console.log(Password);
-  // console.log(Confpass);
-  console.log(Gender);
-  console.log(Phone);
-  console.log(Email);
-  console.log(Address);
+  // console.log(FullName);
+  // console.log(Birth);
+  // console.log(Username);
+  // console.log(Password);
+  // console.log(Gender);
+  // console.log(Phone);
+  // console.log(Email);
+  // console.log(Address);
   
   var encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
   // console.log(encpass);
 
-  // var lowerusername = Username.toLowerCase()
-  // var cekUsername = `SELECT username FROM userprofile WHERE username="${Username}"`
+  var lowerusername = Username.toLowerCase()
+  // console.log(lowerusername)
+  // console.log(Username)
 
   var sql = `INSERT INTO userprofile SET fullname="${FullName}", birth="${Birth}", 
-  username="${Username}", password="${Password}", 
+  username="${lowerusername}", password="${encpass}", 
   gender="${Gender}", phone="${Phone}", 
   email="${Email}", address="${Address}"`;
-  db.query(sql, (err, result) => { 
-    if(err) throw err;
+  db.query(sql, (err, result) => 
+  { 
+    if(err) 
+    {
+      res.send('-1')
+    }
     else
     {
       res.send('1')
@@ -757,7 +777,7 @@ app.post('/Login', (req, res) =>
     {
       for (var i=0; i<result.length; i++)
       {
-        if (Username === result[i].username && Password === result[i].password)
+        if (Username === result[i].username && encpass === result[i].password)
         {
           // console.log('Login Berhasil');
           // console.log(result[i].id)
@@ -791,6 +811,28 @@ app.post('/Userprofile', (req, res) =>
   });
 })
 // to get the user data in userprofile
+
+app.post('/changeProfile', (req, res) => 
+{
+  var userID = req.body.userID;
+  var fullname = req.body.fullname
+  var birth = req.body.birth
+  var username = req.body.username
+  var gender = req.body.gender
+  var phone = req.body.phone
+  var email = req.body.email
+  var address = req.body.address
+
+  var pullData = `UPDATE userprofile SET fullname=?, birth=?, username=?, gender=?, phone=?, email=?, address=? WHERE id="${userID}"`
+  db.query(pullData, [fullname, birth, username, gender, phone, email, address], (err, result) => { 
+    if(err) {
+      throw err
+    } else {
+      res.send('1');
+    };
+  });
+})
+// to change user data in userprofile
 
 // ========================= USER - Payment History =========================
 app.post('/userUnpaid', (req, res) =>
@@ -973,6 +1015,32 @@ app.get('/Productlist', (req, res) =>
     });
 })
 // User Product List
+
+app.get('/Homeproduct', (req, res) =>
+{
+    var pullData = 'SELECT * FROM product ORDER BY id DESC LIMIT 3'
+    db.query(pullData, (err, results) => { 
+      if(err) {
+        throw err
+      } else {
+        res.send(results);
+      };
+    });
+})
+// User Product List for Home
+
+app.get('/Carouselhome', (req, res) =>
+{
+    var pullData = 'SELECT * FROM product ORDER BY id DESC LIMIT 6'
+    db.query(pullData, (err, results) => { 
+      if(err) {
+        throw err
+      } else {
+        res.send(results);
+      };
+    });
+})
+// User Product List for Home Carousel
 
 app.post('/Productlist', (req, res) => 
 {
