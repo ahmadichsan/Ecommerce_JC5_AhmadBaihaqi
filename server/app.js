@@ -88,6 +88,50 @@ app.get('/mostOrderUser', (req, res) =>
 })
 // User with most order List for Admin page
 
+app.get('/numberofSales', (req, res) =>
+{  
+  var pullData = 'SELECT COUNT(*) AS transactionCount FROM inv_header'
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else res.send(result);
+  });
+})
+// number of sales for Admin page
+
+app.get('/numberofOrder', (req, res) =>
+{  
+  var pullData = 'SELECT COUNT(DISTINCT orderID) AS number_order FROM checkout WHERE itemstatus_id="1"'
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else res.send(result);
+  });
+})
+// number of order for Admin page
+
+app.get('/numberofUsers', (req, res) =>
+{  
+  var pullData = 'SELECT COUNT(*) AS number_user FROM userprofile'
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else res.send(result);
+  });
+})
+// number of users for admin page
+
+app.get('/grossIncome', (req, res) =>
+{  
+  var pullData = 'SELECT sum(grandtotal) AS gross_income FROM inv_header'
+  db.query(pullData, (err, result) => 
+  { 
+    if(err) throw err
+    else res.send(result);
+  });
+})
+// gross income
+
 // ========================= ADMIN - User List =========================
 
 app.get('/userList', (req, res) =>

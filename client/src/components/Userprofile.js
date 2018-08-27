@@ -186,10 +186,12 @@ class Userprofile extends Component
                                             <div className="col-md-5">
                                                 <label className="radio-inline">
                                                     <input type="radio" name="gender" onChange={this.selectGender} value="Man" checked={(this.state.gender === "Man")}/>
+                                                    {/* if value of this.state.gender is  Man, then this radio button will get selected by default */}
                                                     Man
                                                 </label>
                                                 <label className="radio-inline">
                                                     <input type="radio" name="gender" onChange={this.selectGender} value="Woman" checked={(this.state.gender === "Woman")}/>
+                                                    {/* if value of this.state.gender is  Woman, then this radio button will get selected by default */}
                                                     Woman
                                                 </label>
                                             </div>

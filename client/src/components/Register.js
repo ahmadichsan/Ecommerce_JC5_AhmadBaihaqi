@@ -33,8 +33,16 @@ class Register extends Component
         var email = userdata.email.value;
         var address = userdata.address.value;
         var self = this;
-        
-        axios.post('http://localhost:3001/Register', {
+
+        // if (fullname !== '' && birth !== '' && username !== '' && password !== '' && 
+        // confpassword !== '' && gender !== '' && phone !== '' && email !== '' && address !== '')
+        // {
+
+        // }
+        // to make sure that all field has value
+
+        axios.post('http://localhost:3001/Register', 
+        {
             fullname: fullname,
             birth: birth,
             username: username,
