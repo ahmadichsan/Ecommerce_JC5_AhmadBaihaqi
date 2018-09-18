@@ -16,21 +16,19 @@ app.use(upload());
 var cors = require('cors');
 app.use(cors());
 
-// const crypto = require('crypto');
-// const secret = 'abcdefg';
-
 const bcrypt = require('bcrypt');
 
-const mysql = require('mysql');
-const db = mysql.createConnection({ 
-  host : 'localhost', 
-  port: '3306',
-  user : 'root', 
-  password : 'root',
-  database : 'ecommerce',
-  multipleStatements: true
-});
-db.connect();
+// const mysql = require('mysql');
+// const db = mysql.createConnection({ 
+//   host : 'localhost', 
+//   port: '3306',
+//   user : 'root', 
+//   password : 'root',
+//   database : 'ecommerce',
+//   multipleStatements: true
+// });
+// db.connect();
+var db = require('./config/db/sqlconfig')
 
 // ================================================== ADMIN SECTION ==================================================
 
