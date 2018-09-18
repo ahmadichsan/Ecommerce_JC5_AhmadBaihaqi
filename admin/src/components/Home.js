@@ -17,14 +17,6 @@ class Dashboard extends Component
     }
     componentWillMount = () =>
     {
-        axios.get('http://localhost:3001/mostOrderUser')
-        .then((respon) => 
-        {
-            var hasil = respon.data
-            console.log(hasil)
-        })
-        // to view user with most order
-
         axios.get('http://localhost:3001/numberofSales')
         .then((respon) => 
         {

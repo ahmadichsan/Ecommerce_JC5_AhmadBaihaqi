@@ -24,7 +24,7 @@ const db = mysql.createConnection({
   host : 'localhost', 
   port: '3306',
   user : 'root', 
-  password : '',
+  password : 'root',
   database : 'ecommerce',
   multipleStatements: true
 });
@@ -76,17 +76,6 @@ app.post('/admlogin', (req, res) =>
 // NOTE: Admin login setup is done
 
 // ========================= ADMIN - Home =========================
-
-app.get('/mostOrderUser', (req, res) =>
-{  
-  var pullData = 'SELECT username, COUNT(*) FROM inv_header JOIN userprofile ON inv_header.user_id=userprofile.id GROUP BY inv_header.user_id'
-  db.query(pullData, (err, result) => 
-  { 
-    if(err) throw err
-    else res.send(result);
-  });
-})
-// User with most order List for Admin page
 
 app.get('/numberofSales', (req, res) =>
 {  
