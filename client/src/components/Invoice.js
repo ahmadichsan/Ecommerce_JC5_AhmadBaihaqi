@@ -45,6 +45,10 @@ class Invoice extends Component
                     var GT = 0;
                     for (var i in results) GT = GT + results[i].subtotal
 
+                    var date = results[0].orderDate;
+                    var indexT = date.indexOf('T')
+                    var orderDate = date.slice(0, indexT)
+
                     this.setState({
                         listInvoice: results,
                         fullname: results[0].ship_name,
@@ -54,8 +58,8 @@ class Invoice extends Component
                         devMeth: results[0].dev_meth,
                         devPrice: results[0].dev_price,
                         grandTotal: results[0].dev_price + GT,
-                        orderDate: results[0].orderDate,
-                        orderID: 'INV_' + results[0].INV
+                        orderDate: orderDate,
+                        orderID: 'RC_' + results[0].INV
                     })
                 }
             })
@@ -93,7 +97,7 @@ class Invoice extends Component
                         <div className="col-md-12">
                             <div className="panel panel-default">
                                 <div className="panel-heading">
-                                    <h3><strong>Invoice</strong></h3>
+                                    <h3><strong>Reciept</strong></h3>
                                 </div>
                                 <div className="panel-body">
                                     <div className="table-responsive">
@@ -141,7 +145,7 @@ class Invoice extends Component
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td><b>Invoice ID</b></td>
+                                                    <td><b>Reciept Code</b></td>
                                                     <td></td>
                                                     <td></td>
                                                     <td className="text-right">

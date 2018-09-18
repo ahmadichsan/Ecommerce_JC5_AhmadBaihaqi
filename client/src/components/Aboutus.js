@@ -1,27 +1,9 @@
 import React, { Component } from 'react';
 
 class Aboutus extends Component
-{
-    state =
-    {
-        val: ''
-    }
-    componentDidMount = () =>
-    {
-        this.setState({
-            val: 'ini didmount'
-        })
-    }
-
-    componentWillMount = () =>
-    {
-        // this.setState({
-        //     val: 'ini willmount'
-        // })
-    }
+{   
     render()
     {
-        console.log(this.state.val)
         return (
             <div id="homeback">
                 <div className="padtop padbot">    

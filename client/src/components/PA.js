@@ -36,7 +36,9 @@ export default class PA extends Component
         {
             var INV = item.INV;
             var GrandTotal = item.grandtotal;
-            var orderDate = item.orderDate;
+            var date = item.orderDate;
+            var indexT = date.indexOf('T')
+            var orderDate = date.slice(0, indexT)
 
             return <tr key={index}>
             <td style={{width:200}} className="text-center">{INV}</td>
@@ -90,7 +92,7 @@ export default class PA extends Component
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th style={{width:200}} className="text-center">Invoice</th>
+                                            <th style={{width:200}} className="text-center">Reciept Code</th>
                                             <th style={{width:200}} className="text-center">Grand Total</th>
                                             <th style={{width:200}} className="text-center">Order Date</th>
                                             <th style={{width:200}} className="text-center">Detail</th>

@@ -16,8 +16,10 @@ app.use(upload());
 var cors = require('cors');
 app.use(cors());
 
-const crypto = require('crypto');
-const secret = 'abcdefg';
+// const crypto = require('crypto');
+// const secret = 'abcdefg';
+
+const bcrypt = require('bcrypt');
 
 const mysql = require('mysql');
 const db = mysql.createConnection({ 
@@ -746,17 +748,39 @@ app.post('/Delcat', (req, res) =>
 // because of foreign key
 
 // ================================================== USER SECTION ==================================================
+// ========================= USER - NAVBAR =========================
+
+app.post('/checkUsername', (req, res) => {
+  var userID = req.body.userID
+  var pullUsername = `SELECT username FROM userprofile WHERE id="${userID}"`
+  db.query(pullUsername, (err, result) => {
+    if (err) throw err
+    else res.send(result[0])
+  })
+})
+
+app.post('/jumlahcart', (req, res) => {
+  var userID = req.body.userID
+  var jumlahcart = `SELECT SUM(qty) AS jumlahcart FROM cart WHERE user_id="${userID}" AND checkoutstat_id="2"`
+  db.query(jumlahcart, (err, result) => {
+    if (err) throw err
+    else res.send(result[0])
+  })
+})
+
 // ========================= USER - Register and Login =========================
 app.post('/Register', (req, res) =>
 {
-  var FullName = req.body.fullname;
-  var Birth = req.body.birth;
-  var Username = req.body.username;
-  var Password = req.body.password;
-  var Gender = req.body.gender;
-  var Phone = req.body.phone;
-  var Email = req.body.email;
-  var Address = req.body.address;
+  var userData = req.body.userData;
+  // console.log(userData)
+  var FullName = userData[0].fullname;
+  var Birth = userData[0].birth;
+  var Username = userData[0].username;
+  var Password = userData[0].password;
+  var Gender = userData[0].gender;
+  var Phone = userData[0].phone;
+  var Email = userData[0].email;
+  var Address = userData[0].address;
             
   // console.log(FullName);
   // console.log(Birth);
@@ -766,29 +790,55 @@ app.post('/Register', (req, res) =>
   // console.log(Phone);
   // console.log(Email);
   // console.log(Address);
-  
-  var encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
-  // console.log(encpass);
 
   var lowerusername = Username.toLowerCase()
-  // console.log(lowerusername)
-  // console.log(Username)
+  var loweremail = Email.toLowerCase()
 
-  var sql = `INSERT INTO userprofile SET fullname="${FullName}", birth="${Birth}", 
-  username="${lowerusername}", password="${encpass}", 
-  gender="${Gender}", phone="${Phone}", 
-  email="${Email}", address="${Address}"`;
-  db.query(sql, (err, result) => 
-  { 
-    if(err) 
-    {
-      res.send('-1')
-    }
+  var pullData = `SELECT COUNT(username) AS jumlahusername FROM userprofile WHERE username="${lowerusername}";`
+  pullData += `SELECT COUNT(email) AS jumlahemail FROM userprofile WHERE email="${loweremail}"`
+  db.query(pullData, (err, result) => 
+  {
+    if (err) throw err
     else
     {
-      res.send('1')
+      var jumlahusername = result[0][0].jumlahusername
+      var jumlahemail = result[1][0].jumlahemail
+      // console.log(jumlahemail)
+      // console.log(jumlahusername)
+      if (jumlahemail !== 0 && jumlahusername !== 0)
+      {
+        res.send('-2')
+      }
+      else if (jumlahemail !== 0)
+      {
+        res.send('-1')
+      }
+      else if (jumlahusername !== 0)
+      {
+        res.send('0')
+      }
+      else
+      {
+        bcrypt.genSalt(10, (err, salt) =>
+        {
+          bcrypt.hash(Password, salt, (err, hash) =>
+          {
+            // console.log(hash)
+            var storedPass = hash
+            var sql = `INSERT INTO userprofile SET fullname="${FullName}", birth="${Birth}", 
+            username="${lowerusername}", password="${storedPass}", 
+            gender="${Gender}", phone="${Phone}", 
+            email="${loweremail}", address="${Address}"`;
+            db.query(sql, (err, result) => 
+            { 
+              if(err) throw err
+              else res.send('1')
+            });
+          });
+        });
+      }
     }
-  });
+  })
 })
 // User Register
 
@@ -799,30 +849,37 @@ app.post('/Login', (req, res) =>
 
   // console.log(Username);
   // console.log(Password);
-  
-  var encpass = crypto.createHash('sha256', secret).update(Password).digest('hex');
-  // console.log(encpass);
 
-  var pullData = "SELECT * FROM userprofile";
-  db.query(pullData, (err, result) => {
+  var pullData = `SELECT * FROM userprofile WHERE username="${Username}"`;
+  db.query(pullData, (err, queryresult) => 
+  {
     if (err) throw err;
     else
     {
-      for (var i=0; i<result.length; i++)
+      if (queryresult.length === 0)
       {
-        if (Username === result[i].username && encpass === result[i].password)
+        res.send('0')
+        // username not exist
+      }
+      else
+      {
+        var passfromDB = queryresult[0].password
+        bcrypt.compare(Password, passfromDB, (err, result) =>
         {
-          // console.log('Login Berhasil');
-          // console.log(result[i].id)
-          var userID = result[i].id;
-          res.send((userID).toString());
-          break;
-        }
-        else if (i === result.length-1)
-        {
-          // console.log('Data tidak ditemukan, login gagal');
-          res.send('-1')
-        }
+          if (err) throw err
+          else
+          {
+            if (result ===  true)
+            {
+              var userID = queryresult[0].id;
+              res.send((userID).toString());
+            }
+            else
+            {
+              res.send('-1')
+            }
+          }
+        });
       }
     }
   })
@@ -848,24 +905,92 @@ app.post('/Userprofile', (req, res) =>
 app.post('/changeProfile', (req, res) => 
 {
   var userID = req.body.userID;
-  var fullname = req.body.fullname
-  var birth = req.body.birth
-  var username = req.body.username
-  var gender = req.body.gender
-  var phone = req.body.phone
-  var email = req.body.email
-  var address = req.body.address
+  userID = parseInt(userID);
+  var userData = req.body.userData;
+  var FullName = userData[0].fullname;
+  var Birth = userData[0].birth;
+  var Username = userData[0].username;
+  var Gender = userData[0].gender;
+  var Phone = userData[0].phone;
+  var Email = userData[0].email;
+  var Address = userData[0].address;
 
-  var pullData = `UPDATE userprofile SET fullname=?, birth=?, username=?, gender=?, phone=?, email=?, address=? WHERE id="${userID}"`
-  db.query(pullData, [fullname, birth, username, gender, phone, email, address], (err, result) => { 
-    if(err) {
-      throw err
-    } else {
-      res.send('1');
-    };
-  });
+  var lowerusername = Username.toLowerCase()
+  var loweremail = Email.toLowerCase()
+
+  updateUserProfile = () =>
+  {
+    var pullData = `UPDATE userprofile SET fullname=?, birth=?, username=?, gender=?, phone=?, email=?, address=? WHERE id="${userID}"`
+    db.query(pullData, [FullName, Birth, lowerusername, Gender, Phone, loweremail, Address], (err, result) => { 
+      if(err) {
+        throw err
+      } else {
+        res.send('1');
+      };
+    });
+  }
+  // update profile function, to make the code easy to call in more than one place
+
+  var checkData = `SELECT COUNT(username) AS jumlahusername FROM userprofile WHERE username="${lowerusername}";`
+  checkData += `SELECT COUNT(email) AS jumlahemail FROM userprofile WHERE email="${loweremail}"`
+  db.query(checkData, (err, result) => 
+  {
+    if (err) throw err
+    else
+    {
+      // first, count how many data that has same username and email between the input and in the db
+      var jumlahusername = result[0][0].jumlahusername;
+      var jumlahemail = result[1][0].jumlahemail;
+      
+      if (jumlahemail > 0 || jumlahusername > 0)
+      {
+        var checkUser = `SELECT id FROM userprofile WHERE username="${lowerusername}";`
+        checkUser += `SELECT id FROM userprofile WHERE email="${loweremail}"`
+        db.query(checkUser, (err, response) => 
+        {
+          if (err) throw err
+          else
+          {
+            // then, take the userID who has the username and email as the users input
+            if (jumlahemail > 0 && jumlahusername > 0)
+            {
+              var idUsername = response[0][0].id;
+              var idEmail = response[1][0].id;
+              (idUsername === userID && idEmail === userID) ? updateUserProfile() : res.send('-2')
+              // if the id of username and email are same with the userID that login at that time, it means that users actually did not change anything
+              // they just hit the submit button at userprofile
+            }
+            else if (jumlahemail > 0)
+            {
+              var idEmail = response[1][0].id;
+              (idEmail === userID) ? updateUserProfile() : res.send('-1')
+              // if the email already exist but username available, then check the ID of email (because maybe the user just change their username, but not their email)
+              // if the ID of the email match with the userID that login at that time, it means that the user just change their username, so system will let them update
+              // their username. Otherwise, if the id of email did not match, it means they input an email that already used by other user, and the system did not
+              // allow this to happen
+            }
+            else if (jumlahusername > 0)
+            {
+              var idUsername = response[0][0].id;
+              (idUsername === userID) ? updateUserProfile() : res.send('0')
+              // if the username already exist but email available, then check the ID of username (because maybe the user just change their email, but not their username)
+              // if the ID of the username match with the userID that login at that time, it means that the user just change their email, so system will let them update
+              // their email. Otherwise, if the id of username did not match, it means they input an username that already used by other user, and the system did not
+              // allow this to happen
+            }
+          }
+        })
+      }
+      else
+      {
+        updateUserProfile()
+        // if the user change their email and username and the input data did not match with any data in db, then the system will directly update the data in db
+      }
+    }
+  })
 })
 // to change user data in userprofile
+// first, check if the new username/email already exist in database. If so, then reject. If not, then update the data in db
 
 // ========================= USER - Payment History =========================
 app.post('/userUnpaid', (req, res) =>
@@ -1035,23 +1160,23 @@ app.post('/Failed', (req, res) =>
 // ========================= USER - Product =========================
 app.get('/Productlist', (req, res) =>
 {
-    var pullData = 'SELECT * FROM product;'
-    pullData += 'SELECT * FROM category'
-    db.query(pullData, (err, results) => { 
-      if(err) {
-        throw err
-      } else {
-        res.send(results);
-        // res.sendFile('/images/box1.jpg', {root : __dirname})
-        // console.log(results[1]);
-      };
-    });
+  var pullData = 'SELECT * FROM product;'
+  pullData += 'SELECT * FROM category'
+  db.query(pullData, (err, results) => { 
+    if(err) {
+      throw err
+    } else {
+      res.send(results);
+    };
+  });
 })
 // User Product List
 
 app.get('/Homeproduct', (req, res) =>
 {
-    var pullData = 'SELECT * FROM product ORDER BY id DESC LIMIT 3'
+    var pullData = `select cart.prod_id, product.prod_name, product.prod_img,
+    sum(cart.qty) as total from cart JOIN product ON cart.prod_id=product.id
+    where cart.checkoutstat_id in (3, 7, 8) group by cart.prod_id order by total DESC limit 3`
     db.query(pullData, (err, results) => { 
       if(err) {
         throw err

@@ -35,7 +35,9 @@ class Unpaid extends Component
         const unpaidUser = this.state.unpaidList.map((item, index) => 
         {
             var orderID = item.orderID;
-            var orderDate = item.orderDate;
+            var date = item.orderDate;
+            var indexT = date.indexOf('T')
+            var orderDate = date.slice(0, indexT)
             var total = item.total;
 
             return <tr key={index}>
@@ -67,7 +69,7 @@ class Unpaid extends Component
                                 <table className="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th style={{width:200}} className="text-center">Order ID</th>
+                                            <th style={{width:200}} className="text-center">Invoice ID</th>
                                             <th style={{width:200}} className="text-center">Grand Total</th>
                                             <th style={{width:200}} className="text-center">Order Date</th>
                                             <th style={{width:200}} className="text-center">Detail</th>
@@ -77,7 +79,7 @@ class Unpaid extends Component
                                         {(unpaidLength === 0) ? noItem : unpaidUser}
                                     </tbody>
                                 </table>
-                                <div className="text-center col-md-12 col-sm-12 col-xs-12">
+                                {/* <div className="text-center col-md-12 col-sm-12 col-xs-12">
                                     <ul className="pagination">
                                         <li className="page-item disabled">
                                             <a className="page-link" href="">&laquo;</a>
@@ -89,7 +91,7 @@ class Unpaid extends Component
                                             <a className="page-link" href="">&raquo;</a>
                                         </li>
                                     </ul>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </div>

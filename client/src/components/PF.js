@@ -34,7 +34,9 @@ export default class PF extends Component
         const pfUser = this.state.pfList.map((item, index) => 
         {
             var orderID = item.orderID;
-            var orderDate = item.orderDate;
+            var date = item.orderDate;
+            var indexT = date.indexOf('T')
+            var orderDate = date.slice(0, indexT)
             var total = item.total;
 
             return <tr key={index}>
@@ -80,7 +82,7 @@ export default class PF extends Component
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th style={{width:200}} className="text-center">Order ID</th>
+                                            <th style={{width:200}} className="text-center">Invoice ID</th>
                                             <th style={{width:200}} className="text-center">Grand Total</th>
                                             <th style={{width:200}} className="text-center">Order Date</th>
                                             <th style={{width:200}} className="text-center">Detail</th>

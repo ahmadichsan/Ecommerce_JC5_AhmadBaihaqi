@@ -3,8 +3,7 @@ import './App.css';
 import { Route } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
-import Navbar1 from './components/Navbar1';
-import Navbar2 from './components/Navbar2';
+import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Aboutus from './components/Aboutus';
 import Login from './components/Login';
@@ -19,14 +18,12 @@ import Failed from './components/Failed';
 import Invoice from './components/Invoice';
 import Cart from './components/Cart';
 import Footer from './components/Footer';
-import Logout from './components/Logout';
-// import CobaCart from './components/CobaCart';
 
 class App extends Component {
   render() {
     const cookies = new Cookies();
     let mycookie = cookies.get('sessionID')
-    let Navigation = (!mycookie) ? <Navbar1/> : <Navbar2/>
+    let Navigation = (!mycookie) ? <Navbar user={mycookie}/> : <Navbar user={mycookie}/>
 
     return (
       <div>
@@ -44,8 +41,6 @@ class App extends Component {
           <Route path="/PaymentFailed" component={Failed}/>
           <Route path="/Invoice" component={Invoice}/>
           <Route path="/Cart" component={Cart}/>
-          {/* <Route path="/Cart" component={CobaCart}/> */}
-          <Route path="/Logout" component={Logout}/>
         <Footer/>
       </div>
     );

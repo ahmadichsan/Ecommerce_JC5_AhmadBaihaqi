@@ -125,7 +125,7 @@ class Cart extends Component
                 {
                     var takeData = response.data[0];
                     var subprice = response.data[1];
-                    console.log(subprice)
+                    // console.log(subprice)
                     
                     self.setState({
                         detailCart: takeData,

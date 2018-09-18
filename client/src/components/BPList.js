@@ -35,7 +35,9 @@ class Unpaid extends Component
         const BPUser = this.state.BPLists.map((item, index) => 
         {
             var orderID = item.orderID;
-            var orderDate = item.orderDate;
+            var date = item.orderDate;
+            var indexT = date.indexOf('T')
+            var orderDate = date.slice(0, indexT)
             var total = item.total;
 
             return <tr key={index}>
@@ -73,7 +75,7 @@ class Unpaid extends Component
                                                     <ul className="dropdown-menu">
                                                         <li><a href="">Order Date</a></li>
                                                         <li><a href="">Username</a></li>
-                                                        <li><a href="">Order ID</a></li>
+                                                        <li><a href="">Invoice ID</a></li>
                                                     </ul>
                                                 </div>
                                             </td>
@@ -90,7 +92,7 @@ class Unpaid extends Component
                                             </td>
                                         </tr>
                                         <tr>
-                                            <th style={{width:200}} className="text-center">Order ID</th>
+                                            <th style={{width:200}} className="text-center">Invoice ID</th>
                                             <th style={{width:200}} className="text-center">Grand Total</th>
                                             <th style={{width:200}} className="text-center">Order Date</th>
                                             <th style={{width:200}} className="text-center">Detail</th>

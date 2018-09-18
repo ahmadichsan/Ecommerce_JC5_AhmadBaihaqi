@@ -65,7 +65,7 @@ class Productlist extends Component
             return <div key={index} className="col-md-6">
             <div className="card ada mb-3">
                 <div className="card-header">
-                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor"><h3>{prodname}</h3></Link>
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor"><h3 id="Oleo">{prodname}</h3></Link>
                 </div>
                 <div className="card-body">
                     <img className="" id="stylegambar" src={'http://localhost:3001/images/' + prodimage} alt="asd"/>

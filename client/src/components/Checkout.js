@@ -47,6 +47,10 @@ class Checkout extends Component
                     var GT = 0;
                     for (var i in results) GT = GT + results[i].subtotal
 
+                    var date = results[0].orderDate;
+                    var indexT = date.indexOf('T')
+                    var orderDate = date.slice(0, indexT)
+
                     this.setState({
                         listCheckout: results,
                         fullname: results[0].ship_name,
@@ -56,8 +60,8 @@ class Checkout extends Component
                         devMeth: results[0].dev_meth,
                         devPrice: results[0].dev_price,
                         grandTotal: results[0].dev_price + GT,
-                        orderDate: results[0].orderDate,
-                        orderID: 'OI_' + results[0].orderID
+                        orderDate: orderDate,
+                        orderID: 'INV_' + results[0].orderID
                     })
                 }
             })
@@ -145,7 +149,7 @@ class Checkout extends Component
                         <div className="col-md-12">
                             <div className="panel panel-default">
                                 <div className="panel-heading">
-                                    <h3><strong>Order Summary - Checkout</strong></h3>
+                                    <h3><strong>Order Summary - Invoice</strong></h3>
                                 </div>
                                 <div className="panel-body">
                                     <div className="table-responsive">
@@ -192,7 +196,7 @@ class Checkout extends Component
                                                     <td className="text-right"><b>{this.state.orderDate}</b></td>
                                                 </tr>
                                                 <tr>
-                                                    <td><b>Order ID</b></td>
+                                                    <td><b>Invoice ID</b></td>
                                                     <td></td>
                                                     <td></td>
                                                     <td className="text-right"><b>{this.state.orderID}</b></td>

@@ -43,6 +43,10 @@ class BeingProcess extends Component
                     var GT = 0;
                     for (var i in results) GT = GT + results[i].subtotal
 
+                    var date = results[0].orderDate;
+                    var indexT = date.indexOf('T')
+                    var orderDate = date.slice(0, indexT)
+
                     this.setState({
                         listBP: results,
                         fullname: results[0].ship_name,
@@ -52,8 +56,8 @@ class BeingProcess extends Component
                         devMeth: results[0].dev_meth,
                         devPrice: results[0].dev_price,
                         grandTotal: results[0].dev_price + GT,
-                        orderDate: results[0].orderDate,
-                        orderID: 'OI_' + results[0].orderID
+                        orderDate: orderDate,
+                        orderID: 'INV_' + results[0].orderID
                     })
                 }
             })

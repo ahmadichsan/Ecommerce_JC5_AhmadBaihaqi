@@ -9,27 +9,28 @@ class Home extends Component
 {
     state = 
     {
-        newArrival: [],
+        mostordered: [],
         carouselSatu: [],
         carouselDua: [],
         redirectCart: false,
         redirectLogin: false
     }
-    componentWillMount = () =>
+
+    componentDidMount = () =>
     {
         axios.get('http://localhost:3001/Homeproduct')
         .then((response) => 
         {
             // console.log(response.data);
             this.setState({
-                newArrival: response.data
+                mostordered: response.data
             })
         })
 
         axios.get('http://localhost:3001/Carouselhome')
         .then((response) => 
         {
-            console.log(response.data);
+            // console.log(response.data);
             var hasil = response.data
             var carouselSatu = []
             var carouselDua = []
@@ -101,15 +102,15 @@ class Home extends Component
         // if user not login yet, when user hit add to cart, they will
         // redirect to login
 
-        const newArrivals = this.state.newArrival.map((item, index) => 
+        const mostorder = this.state.mostordered.map((item, index) => 
         {
-            let prodid = item.id;
+            let prodid = item.prod_id;
             let prodname = item.prod_name;
             let prodimage = item.prod_img;
             return <div key={index} className="col-md-4">
             <div className="card ada mb-3">
                 <div className="card-header">
-                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor"><h3>{prodname}</h3></Link>
+                    <Link to={{pathname: '/Productdetail/' + prodid, state: {prodid: prodid}}} id="nodecor"><h3 id="Oleo">{prodname}</h3></Link>
                 </div>
                 <div className="card-body">
                     <img className="" id="stylegambar" src={'http://localhost:3001/images/' + prodimage} alt="asd"/>
@@ -185,7 +186,7 @@ class Home extends Component
                             <p id="Fugaz" style={{color:"black",fontSize:30}}>#IndieCakery <br/> #WeCountMemoriesNotCalories</p>
                             <div className="lead">
                                 <a className="btn btn-primary btn-lg" href="#newestproduct">Grab Our Latest Product!</a>&nbsp;
-                                <a className="btn btn-success btn-lg" href="#mostordered">Our New Arrival Product!</a><br/><br/>
+                                <a className="btn btn-success btn-lg" href="#mostordered">Our Most Order Product!</a><br/><br/>
                                 <center>
                                     <a className="btn btn-warning btn-lg" href="#custtest">Cust Testimonials</a>
                                 </center>
@@ -198,9 +199,9 @@ class Home extends Component
                 <div className="container">
                     <div className="row">
                         <div className="col-md-12 garisnya">
-                            <h2 id="mostordered"><b>New</b> Arrival</h2>
+                            <h2 id="mostordered"><b>Most</b> Order</h2>
                             <div className="row">
-                                {newArrivals}
+                                {mostorder}
                             </div>
                         </div>
                     </div>
